@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechPlast КАЛИБЪР — оферти и разкрой</title>
+<meta name="theme-color" content="#141414">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 96'%3E%3Cpolygon points='12,16 25,8 89,8 76,16' fill='%23C9A227'/%3E%3Cpolygon points='76,16 89,8 89,72 76,80' fill='%238a6f13'/%3E%3Crect x='12' y='16' width='64' height='64' fill='%23FFD700'/%3E%3Crect x='21' y='25' width='46' height='46' fill='%231a1a1a'/%3E%3Crect x='41.8' y='25' width='4.4' height='46' fill='%23FFD700'/%3E%3Crect x='21' y='45.8' width='46' height='4.4' fill='%23FFD700'/%3E%3C/svg%3E">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f4f5f7;color:#1a1a1a;font-size:16px}
+header{background:#141414;color:#fff;padding:16px 18px;
+  background-image:radial-gradient(circle at 12% 40%,rgba(255,215,0,.10),transparent 55%);
+  border-bottom:1px solid #262626}
+.hd-wrap{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:16px}
+.hd-mark{flex:0 0 auto;line-height:0;filter:drop-shadow(0 5px 12px rgba(255,215,0,.22))}
+.hd-mark svg{width:52px;height:auto;display:block}
+.hd-name{font-size:25px;font-weight:900;letter-spacing:.6px;color:#fff;line-height:1}
+.hd-name span{color:#FFD700}
+.hd-sub{font-size:11.5px;font-weight:800;letter-spacing:6px;color:#FFD700;margin-top:4px}
+.hd-tag{font-size:8.5px;letter-spacing:2.6px;color:#7d7d7d;margin-top:5px}
+.install-btn{display:none;align-items:center;justify-content:center;max-width:680px;width:calc(100% - 28px);margin:12px auto 0;border:1px solid #ffdf3f;background:#141414;color:#FFD700;border-radius:8px;padding:11px 14px;font:700 13px -apple-system,BlinkMacSystemFont,Arial,sans-serif;cursor:pointer}
+.install-btn.visible{display:flex}
+main{max-width:680px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card h2{font-size:14px;color:#666;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+label{display:block;font-size:12.5px;color:#888;margin-bottom:5px}
+input,select{width:100%;padding:13px;border:2px solid #eee;border-radius:8px;font-size:17px;font-weight:600;background:#fff}
+input:focus,select:focus{outline:none;border-color:#FFD700}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.tabs{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.tab{flex:1;min-width:64px;padding:11px 6px;border:2px solid #eee;border-radius:8px;text-align:center;cursor:pointer;font-size:12.5px;font-weight:600;background:#fafafa}
+.tab.active{border-color:#1a1a1a;background:#1a1a1a;color:#FFD700}
+.btn{background:#FFD700;color:#1a1a1a;border:none;padding:15px;border-radius:8px;font-size:15px;font-weight:700;width:100%;cursor:pointer;margin-top:6px}
+.btn.dark{background:#1a1a1a;color:#FFD700}
+.btn.small{padding:8px 11px;font-size:12px;width:auto}
+.btn.danger{background:#f0f0f0;color:#c33}
+.total{background:#1a1a1a;color:#fff;border-radius:12px;padding:22px;text-align:center;margin-bottom:14px}
+.total .price{font-size:40px;font-weight:800;color:#FFD700}
+.total .lbl{font-size:12px;color:#999;margin-top:3px}
+.mod{border:1px solid #e8e8e8;border-radius:10px;padding:13px;margin-bottom:10px;background:#fcfcfc}
+.mod-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.mod-title{font-weight:700;font-size:14.5px}
+.mod-detail{font-size:12.5px;color:#777;line-height:1.5}
+.mod-sketch{background:#fff;border:1px solid #eee;border-radius:8px;padding:10px;margin:8px 0;text-align:center}
+.mod-price{font-weight:700;font-size:15px;margin-top:6px}
+.brk{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f2f2f2;font-size:13.5px}
+.brk:last-child{border-bottom:none}
+.brk .n{color:#666}
+.brk .v{font-weight:600}
+.brk2{display:grid;grid-template-columns:1fr 84px 84px;gap:6px;padding:8px 0;border-bottom:1px solid #f2f2f2;font-size:13.5px;align-items:baseline}
+.brk2:last-child{border-bottom:none}
+.n2{color:#666}
+.v2{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.b2-head{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:#aaa;border-bottom:1px solid #e5e5e5}
+.b2-head .v2{font-weight:700;color:#aaa}
+.b2-bold{border-top:2px solid #e5e5e5;border-bottom:none;padding-top:11px}
+.b2-bold .n2{color:#1a1a1a;font-weight:700}
+.b2-bold .v2{font-size:14.5px}
+.b2-sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:#999;margin:14px 0 2px;font-weight:700}
+.total .sub{font-size:13px;color:#777;margin-top:6px}
+.bar{display:flex;height:40px;border-radius:5px;overflow:hidden;margin-bottom:5px;border:1px solid #ddd}
+.pc{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;line-height:1.15;font-weight:700;border-right:2px solid #fff;background:#FFD700;overflow:hidden}
+.pc:nth-child(even){background:#e8c400}
+.wst{background:#eee;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:9px}
+.blbl{font-size:10.5px;color:#999;margin-bottom:2px}
+.cut-grp{margin-bottom:14px}
+.cut-nm{font-weight:700;font-size:13px;margin-bottom:3px}
+.cut-sub{font-size:10.5px;color:#aaa;margin-bottom:6px}
+.hint{font-size:11.5px;color:#999;margin-top:6px;line-height:1.45}
+.warn{font-size:12px;color:#8a5a00;background:#fff8e1;border:1px solid #ffe9a8;padding:9px 11px;border-radius:7px;margin-top:9px;line-height:1.45}
+.empty{text-align:center;color:#bbb;padding:22px;font-size:14px}
+.glass-list{font-size:12px;color:#777;margin-top:4px;line-height:1.5}
+.preview-box{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;margin-top:10px;text-align:center}
+/* Решетка на секциите */
+.cellgrid{display:grid;gap:6px;margin:10px 0}
+.cell{border:2px solid #ddd;border-radius:7px;padding:9px 4px;text-align:center;cursor:pointer;background:#fafafa;font-size:11px;font-weight:600;line-height:1.3;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cell .ic{font-size:15px;margin-bottom:2px}
+.szgrid{display:grid;gap:6px;margin-bottom:8px}
+.szgrid input{padding:10px;font-size:15px}
+.sz-bad{border-color:#e0a0a0!important;background:#fff6f6}
+.cell.t-fix{border-color:#ddd;background:#fafafa;color:#888}
+.cell.t-turn{border-color:#1a1a1a;background:#1a1a1a;color:#FFD700}
+.cell.t-tilt{border-color:#3a6ea5;background:#3a6ea5;color:#fff}
+.cell.t-tt{border-color:#7a4fa3;background:#7a4fa3;color:#fff}
+.cell.t-door{border-color:#8a5a00;background:#8a5a00;color:#FFD700}
+
+/* ===== ДОКУМЕНТ ЗА ПЕЧАТ ===== */
+.print-only{display:none}
+.dh-top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #FFD700;padding-bottom:10px;margin-bottom:14px}
+.dh-brand{display:flex;align-items:center;gap:10px}
+.dh-mark{line-height:0}
+.dh-mark svg{width:38px;height:auto;display:block}
+.dh-logo{font-size:26px;font-weight:900;letter-spacing:1px;color:#1a1a1a;line-height:1}
+.dh-logo span{color:#b8930b}
+.dh-sub{font-size:8.5px;letter-spacing:3px;color:#999;font-weight:600;margin-top:3px}
+.dh-co{font-size:10.5px;color:#666;text-align:right;line-height:1.6}
+.dh-title{font-size:19px;font-weight:800;margin-bottom:10px}
+.dh-client{font-size:12px;line-height:1.7;color:#333;margin-bottom:6px}
+.dh-client b{color:#1a1a1a}
+.dh-note{font-size:11.5px;color:#555;margin-top:8px;padding:8px 10px;background:#fafafa;border-left:3px solid #FFD700}
+
+@media print{
+  body{background:#fff;font-size:12px}
+  main{max-width:100%;padding:0}
+  header,.no-print{display:none!important}
+  .print-only{display:block}
+  .card{box-shadow:none;border:none;padding:0 0 10px;margin-bottom:10px;break-inside:avoid}
+  .card h2{font-size:11px;color:#888;border-bottom:1px solid #eee;padding-bottom:4px}
+  .mod{break-inside:avoid;background:#fff;border:1px solid #ddd}
+  .total{background:#1a1a1a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pc,.wst{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cut-grp{break-inside:avoid}
+  /* режим „оферта за клиент" — крие вътрешните неща */
+  body.doc-client #cutCard,body.doc-client #glassCard,body.doc-client .b2-sec-cost,
+  body.doc-client .brk2.is-cost{display:none!important}
+  /* режим „работен лист" — крие цените */
+  body.doc-shop #brkCard,body.doc-shop .total,body.doc-shop .mod-price{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-wrap">
+    <div class="hd-mark"><svg viewBox="0 0 110 96" xmlns="http://www.w3.org/2000/svg" width="110" height="96">
+  <defs>
+    <linearGradient id="gFront" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE96B"/><stop offset="1" stop-color="#C9A227"/>
+    </linearGradient>
+    <linearGradient id="gTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C9A227"/><stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+    <linearGradient id="gSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C9A227"/><stop offset="1" stop-color="#8a6f13"/>
+    </linearGradient>
+  </defs>
+
+  <!-- екструзия: горна и дясна стена -->
+  <polygon points="12,16 25,8 89,8 76,16" fill="url(#gTop)"/>
+  <polygon points="76,16 89,8 89,72 76,80" fill="url(#gSide)"/>
+
+  <!-- предна рамка -->
+  <rect x="12" y="16" width="64" height="64" fill="url(#gFront)"/>
+  <rect x="21" y="25" width="46" height="46" fill="#1a1a1a"/>
+
+  <!-- делител (кръст) -->
+  <rect x="41.8" y="25" width="4.4" height="46" fill="url(#gFront)"/>
+  <rect x="21" y="45.8" width="46" height="4.4" fill="url(#gFront)"/>
+
+  <!-- вътрешна екструзия на отвора (дълбочина на профила) -->
+  <polygon points="21,25 26.46,21.64 72.46,21.64 67,25" fill="#000" opacity="0.35"/>
+
+  <!-- размерни щрихи — мотивът „калибър" -->
+  <g stroke="#FFD700" stroke-width="1.6" opacity="0.9">
+    <line x1="12" y1="87" x2="76" y2="87"/>
+    <line x1="12" y1="83.5" x2="12" y2="90.5"/>
+    <line x1="76" y1="83.5" x2="76" y2="90.5"/>
+  </g>
+  <g stroke="#FFD700" stroke-width="1.6" opacity="0.9">
+    <line x1="5" y1="16" x2="5" y2="80"/>
+    <line x1="1.5" y1="16" x2="8.5" y2="16"/>
+    <line x1="1.5" y1="80" x2="8.5" y2="80"/>
+  </g>
+</svg></div>
+    <div class="hd-txt">
+      <div class="hd-name">TECH<span>PLAST</span></div>
+      <div class="hd-sub">КАЛИБЪР</div>
+      <div class="hd-tag">ОФЕРТИ · РАЗКРОЙ · ПРОИЗВОДСТВО</div>
+    </div>
+  </div>
+</header>
+
+<button class="install-btn no-print" id="installBtn" type="button">Инсталирай приложението</button>
+
+<main>
+
+<div id="docHeader" class="print-only">
+  <div class="dh-top">
+    <div class="dh-brand">
+      <div class="dh-mark"><svg viewBox="0 0 110 96" xmlns="http://www.w3.org/2000/svg" width="110" height="96">
+  <defs>
+    <linearGradient id="pFront" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE96B"/><stop offset="1" stop-color="#C9A227"/>
+    </linearGradient>
+    <linearGradient id="pTop" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C9A227"/><stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+    <linearGradient id="pSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C9A227"/><stop offset="1" stop-color="#8a6f13"/>
+    </linearGradient>
+  </defs>
+
+  <!-- екструзия: горна и дясна стена -->
+  <polygon points="12,16 25,8 89,8 76,16" fill="url(#pTop)"/>
+  <polygon points="76,16 89,8 89,72 76,80" fill="url(#pSide)"/>
+
+  <!-- предна рамка -->
+  <rect x="12" y="16" width="64" height="64" fill="url(#pFront)"/>
+  <rect x="21" y="25" width="46" height="46" fill="#ffffff"/>
+
+  <!-- делител (кръст) -->
+  <rect x="41.8" y="25" width="4.4" height="46" fill="url(#pFront)"/>
+  <rect x="21" y="45.8" width="46" height="4.4" fill="url(#pFront)"/>
+
+  <!-- вътрешна екструзия на отвора (дълбочина на профила) -->
+  <polygon points="21,25 26.46,21.64 72.46,21.64 67,25" fill="#000" opacity="0.12"/>
+
+  <!-- размерни щрихи — мотивът „калибър" -->
+  <g stroke="#FFD700" stroke-width="1.6" opacity="0.9">
+    <line x1="12" y1="87" x2="76" y2="87"/>
+    <line x1="12" y1="83.5" x2="12" y2="90.5"/>
+    <line x1="76" y1="83.5" x2="76" y2="90.5"/>
+  </g>
+  <g stroke="#FFD700" stroke-width="1.6" opacity="0.9">
+    <line x1="5" y1="16" x2="5" y2="80"/>
+    <line x1="1.5" y1="16" x2="8.5" y2="16"/>
+    <line x1="1.5" y1="80" x2="8.5" y2="80"/>
+  </g>
+</svg></div>
+      <div><div class="dh-logo">TECH<span>PLAST</span></div>
+      <div class="dh-sub">КАЛИБЪР · PVC &amp; ALUMINIUM</div></div>
+    </div>
+    <div class="dh-co">
+      ЕКО СТИЛ СТРОЙ 90 ЕООД · ЕИК 202013361<br>
+      гр. Търговище, ул. Антим I №47<br>
+      +359 899 913 816 · techplast.bg
+    </div>
+  </div>
+  <div class="dh-title" id="dhTitle">ОФЕРТА</div>
+  <div class="dh-client" id="dhClient"></div>
+</div>
+
+
+
+<div class="card no-print" id="clientCard">
+  <h2>Данни за клиента <span style="text-transform:none;letter-spacing:0;font-weight:400;color:#bbb">— незадължително, но препоръчително</span></h2>
+  <div class="row3">
+    <div><label>Оферта №</label><input type="text" id="cOffer"></div>
+    <div><label>Дата</label><input type="date" id="cDate"></div>
+    <div><label>Валидна до</label><input type="date" id="cValid"></div>
+  </div>
+  <label>Име / фирма</label><input type="text" id="cName" placeholder="напр. Иван Петров или „Строй Инвест" ООД">
+  <label style="margin-top:8px">Обект / адрес</label><input type="text" id="cAddr" placeholder="напр. гр. Варна, ул. Дунав 12">
+  <div class="row3" style="margin-top:8px">
+    <div><label>Телефон</label><input type="tel" id="cPhone"></div>
+    <div><label>Имейл</label><input type="email" id="cMail"></div>
+    <div><label>ЕИК / ДДС №</label><input type="text" id="cEik"></div>
+  </div>
+  <label style="margin-top:8px">Бележка към офертата</label>
+  <textarea id="cNote" rows="2" style="width:100%;padding:12px;border:2px solid #eee;border-radius:8px;font-size:15px" placeholder="напр. срок на изработка, условия на плащане"></textarea>
+  <div class="hint">Празните полета просто няма да се появят в документа.</div>
+</div>
+
+<div class="card no-print">
+  <h2>Клиент и надценка</h2>
+  <label>Тип клиент</label>
+  <div class="tabs" id="clientTabs">
+    <div class="tab active" data-cl="firm">Фирма (без ДДС)</div>
+    <div class="tab" data-cl="person">Частно лице (с ДДС)</div>
+  </div>
+  <label>Надценка — печалба, транспорт и монтаж (%)</label>
+  <input type="number" id="markup" value="75" min="0" step="1">
+  <div class="hint" id="mkHint"></div>
+</div>
+
+<div class="card no-print">
+  <h2>Стандарт</h2>
+  <select id="standard"></select>
+  <div class="hint" id="stdHint"></div>
+</div>
+
+<div class="card no-print">
+  <h2>Нов елемент</h2>
+  <label>Форма</label>
+  <div class="tabs" id="shapeTabs">
+    <div class="tab active" data-shape="rect">Правоъгълник</div>
+    <div class="tab" data-shape="trap">Трапец / наклон</div>
+  </div>
+  <div class="row3">
+    <div><label>Ширина мм</label><input type="number" id="w" value="1200"></div>
+    <div><label id="hLbl">Височина мм</label><input type="number" id="h" value="1400"></div>
+    <div><label>Брой</label><input type="number" id="qty" value="1" min="1"></div>
+  </div>
+  <div id="h2Wrap" style="display:none;margin-bottom:10px">
+    <label>Дясна височина мм (лявата е горната)</label>
+    <input type="number" id="h2" value="900">
+  </div>
+
+  <label>Колони (вертикално делене)</label>
+  <div class="tabs" id="colTabs">
+    <div class="tab active" data-col="1">1</div><div class="tab" data-col="2">2</div>
+    <div class="tab" data-col="3">3</div><div class="tab" data-col="4">4</div>
+  </div>
+  <label>Редове (хоризонтално делене)</label>
+  <div class="tabs" id="rowTabs">
+    <div class="tab active" data-rw="1">1</div><div class="tab" data-rw="2">2</div><div class="tab" data-rw="3">3</div>
+  </div>
+
+  <label>Кликни всяка секция, за да смениш типа ѝ</label>
+  <div id="cellGrid" class="cellgrid"></div>
+
+  <div id="sizePanel">
+    <label style="margin-top:12px">Ширина на всяка колона (мм)</label>
+    <div id="colWInputs" class="szgrid"></div>
+    <label id="rowHLabel">Височина на всеки ред (мм)</label>
+    <div id="rowHInputs" class="szgrid"></div>
+    <button class="btn small" id="autoBtn" style="margin-top:8px;background:#eee;color:#555">↺ Изравни автоматично</button>
+    <div class="hint" id="sizeHint"></div>
+  </div>
+
+  <label>Армировка — дебелина на стоманата (мм)</label>
+  <div class="tabs" id="reinfTabs">
+    <div class="tab" data-rf="0.8">0.8</div>
+    <div class="tab active" data-rf="1.2">1.2</div>
+    <div class="tab" data-rf="1.5">1.5</div>
+    <div class="tab" data-rf="2.0">2.0</div>
+  </div>
+  <div class="hint" id="reinfHint"></div>
+
+  <label>Алуминиев праг (долното крило се реже 45/90)</label>
+  <div class="tabs" id="thrTabs">
+    <div class="tab active" data-thr="0">Без праг</div>
+    <div class="tab" data-thr="1">С алуминиев праг</div>
+  </div>
+
+  <div class="preview-box" id="livePreview"></div>
+  <button class="btn" id="addBtn">+ Добави в офертата</button>
+  <div id="addWarn"></div>
+</div>
+
+<div class="total">
+  <div class="price" id="grand">€0.00</div>
+  <div class="lbl">Цялата оферта · материал + 75% + ДДС</div>
+</div>
+
+<div class="card">
+  <h2>Елементи</h2>
+  <div id="modList"><div class="empty">Още няма добавени елементи.</div></div>
+</div>
+
+<div class="card" id="brkCard">
+  <h2>Ценова разбивка</h2>
+  <div id="brk"><div class="empty">—</div></div>
+  <div class="warn" id="hwWarn" style="display:none"></div>
+</div>
+
+<div class="card" id="cutCard">
+  <h2>Общ разкрой</h2>
+  <div id="cut"><div class="empty">—</div></div>
+  <div class="hint">PVC профил 6.5м · стъклодържател 6м · армировка 6м. Всички елементи се пакетират заедно.</div>
+</div>
+
+<div class="card" id="glassCard">
+  <h2>Списък стъкла за поръчка</h2>
+  <div id="glassList"><div class="empty">—</div></div>
+</div>
+
+<div class="card no-print">
+  <h2>Генериране на документ</h2>
+  <div class="tabs" id="docTabs">
+    <div class="tab active" data-doc="client">Оферта за клиент</div>
+    <div class="tab" data-doc="shop">Работен лист (производство)</div>
+  </div>
+  <div class="hint" id="docHint">Офертата за клиент показва скици и цени, без вътрешния разкрой и себестойността.</div>
+</div>
+<button class="btn dark no-print" id="printBtn">🖨️ Разпечатай / PDF</button>
+
+
+</div>
+
+</main>
+
+<script>
+/* ===== ЦЕНИ — официален ценоразпис Weiss WP5000, €/лм НЕТО (без ДДС) ===== */
+const P = {
+  frame:    { white:2.47, colored:4.37 },  // WP5001 Каса
+  sashWin:  { white:3.14, colored:5.05 },  // WP5002 Крило прозорец
+  mullion:  { white:3.13, colored:4.82 },  // WP5003 Делител
+  sashDoor: { white:4.86, colored:6.77 },  // WP5004 Крило врата
+  bead: { 24:{white:0.67,colored:1.52},    // WP5020
+          32:{white:0.59,colored:1.31},    // WP5030
+          40:{white:0.52,colored:1.19} },  // WP5040
+  /* Армировка по дебелина на стоманата. confirmed=false → цената е предположение */
+  reinf: {
+    "0.8": { price:1.00,   confirmed:true,  note:"потвърдена" },
+    "1.2": { price:2.50,   confirmed:true,  note:"потвърдена (П-образен)" },
+    "1.5": { price:3.00,   confirmed:true,  note:"потвърдена" },
+    "2.0": { price:3.00,   confirmed:false, note:"НЯМА цена — ползва се тази за 1.5мм" },
+  },
+};
+/* Обков — ⚠️ ПОТВЪРДЕНА е само стандартната ставка; останалите са временни */
+const HW = {
+  turn: { name:"обков отваряемо",  price:23.00, confirmed:true  },
+  tilt: { name:"обков падащо",     price:23.00, confirmed:false },
+  tt:   { name:"обков кемферно",   price:23.00, confirmed:false },
+  door: { name:"обков врата",      price:23.00, confirmed:false },
+};
+const GLASS = {
+  "24solar":  {name:"24мм КлимаГард Солар", price:25.42, bead:24},
+  "24premium":{name:"24мм КГ Премиум2",     price:24.83, bead:24},
+  "triplex":  {name:"Триплекс ламиниран",   price:47.13, bead:24},
+  "32":       {name:"Троен 32мм",           price:39.00, bead:32},
+  "42":       {name:"Троен 42мм",           price:41.00, bead:40},
+};
+const STANDARDS = {
+  "s1":{name:"Бяло · 24мм Солар · армировка 1.2мм",       color:"white",   glass:"24solar",   reinf:"thick"},
+  "s2":{name:"Бяло · 24мм КГ Премиум2 · армировка 1.2мм", color:"white",   glass:"24premium", reinf:"thick"},
+  "s3":{name:"Бяло · троен 32мм · армировка 1.2мм",       color:"white",   glass:"32",        reinf:"thick"},
+  "s4":{name:"Бяло · 24мм · армировка 0.8мм",             color:"white",   glass:"24solar",   reinf:"thin"},
+  "s5":{name:"Бяло · Триплекс · армировка 1.2мм",         color:"white",   glass:"triplex",   reinf:"thick"},
+  "s6":{name:"Цветно · 24мм Солар · армировка 1.2мм",     color:"colored", glass:"24solar",   reinf:"thick"},
+  "s7":{name:"Цветно · троен 32мм · армировка 1.2мм",     color:"colored", glass:"32",        reinf:"thick"},
+  "s8":{name:"Цветно · троен 42мм · армировка 1.2мм",     color:"colored", glass:"42",        reinf:"thick"},
+};
+
+const BAR = { pvc:6500, bead:6000, metal:6000 };
+const KERF = 8;         // загуба при рязане от диска
+const MIN_OFFCUT = 300;
+const FRAME_D = 72;     // монтажна ширина каса (за делителите)
+const SASH_SUB = 92;    // приспадане (2×46 видима каса/делител)
+const SASH_ADD = 22;    // 16 застъпване + 6 опилка при топене
+const DED = { glass:100, bead:92, reinf:100 };
+const VAT = 1.20;
+let MARKUP_PCT = 75;   // редактируем: печалба + транспорт + монтаж
+function MK(){ return 1 + MARKUP_PCT/100; }
+let CLIENT = "firm";  // firm = гледа без ДДС, person = гледа с ДДС
+
+/* Типове секции */
+const CT = {
+  fix:  { key:"fix",  label:"Фикс",     ic:"+",  cls:"t-fix",  hw:null,   door:false },
+  turn: { key:"turn", label:"Отваряемо",ic:"◺",  cls:"t-turn", hw:"turn", door:false },
+  tilt: { key:"tilt", label:"Падащо",   ic:"◿",  cls:"t-tilt", hw:"tilt", door:false },
+  tt:   { key:"tt",   label:"Кемферно", ic:"◫",  cls:"t-tt",   hw:"tt",   door:false },
+  door: { key:"door", label:"Врата",    ic:"🚪", cls:"t-door", hw:"door", door:true  },
+};
+const CYCLE = ["fix","turn","tt","tilt","door"];
+
+let ui = { std:"s1", cols:1, rows:1, thr:false, cells:[["fix"]], shape:"rect", colW:[], rowH:[], reinf:"1.2" };
+const DOOR_W = 900, DOOR_H = 2100;  // типични размери за врата — начално предложение
+let modules = [];
+
+const stdSel=document.getElementById("standard");
+stdSel.innerHTML=Object.entries(STANDARDS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+stdSel.addEventListener("change",()=>{ui.std=stdSel.value;showHint();});
+function showHint(){
+  const s=STANDARDS[ui.std], g=GLASS[s.glass];
+  const bp=s.color==="white"?P.bead[g.bead].white:P.bead[g.bead].colored;
+  document.getElementById("stdHint").textContent=
+    `Стъкло ${g.price.toFixed(2)}€/м² · държач ${g.bead}мм ${bp.toFixed(2)}€/лм`;
+}
+showHint();
+function showReinfHint(){
+  const r=P.reinf[ui.reinf];
+  const el=document.getElementById("reinfHint");
+  el.textContent = `${ui.reinf}мм · ${r.price.toFixed(2)} €/лм — ${r.note}`;
+  el.style.color = r.confirmed ? "#999" : "#a35b00";
+}
+showReinfHint();
+
+function totalW(){ return parseFloat(document.getElementById("w").value)||0; }
+function totalH(){ return parseFloat(document.getElementById("h").value)||0; }
+
+/* Автоматично разпределение: колона/ред с врата получава типичен размер за врата,
+   останалото се дели поравно между другите. Всичко остава редактируемо. */
+function autoDistribute(){
+  const W=totalW(), H=totalH(), nc=ui.cols, nr=ui.rows;
+  const colHasDoor=[], rowHasDoor=[];
+  for(let c=0;c<nc;c++) colHasDoor[c]=ui.cells.some(r=>r[c]==="door");
+  for(let r=0;r<nr;r++) rowHasDoor[r]=ui.cells[r].some(t=>t==="door");
+
+  const dist=(total,n,hasDoor,doorSize)=>{
+    const nd=hasDoor.filter(Boolean).length;
+    if(nd===0 || nd===n || total<=0) return Array(n).fill(total/n);
+    const rest=total-nd*doorSize;
+    if(rest<=0) return Array(n).fill(total/n);  // вратите не се побират — връщаме равно
+    const each=rest/(n-nd);
+    return hasDoor.map(d=>d?doorSize:each);
+  };
+  ui.colW = dist(W,nc,colHasDoor,DOOR_W).map(x=>Math.round(x));
+  ui.rowH = dist(H,nr,rowHasDoor,DOOR_H).map(x=>Math.round(x));
+  // последният поема закръглянето, за да е сборът точен
+  if(nc>0) ui.colW[nc-1] = W - ui.colW.slice(0,nc-1).reduce((a,b)=>a+b,0);
+  if(nr>0) ui.rowH[nr-1] = H - ui.rowH.slice(0,nr-1).reduce((a,b)=>a+b,0);
+}
+
+function renderSizes(){
+  const cw=document.getElementById("colWInputs"), rh=document.getElementById("rowHInputs");
+  cw.style.gridTemplateColumns=`repeat(${Math.min(ui.cols,4)},1fr)`;
+  rh.style.gridTemplateColumns=`repeat(${Math.min(ui.rows,3)},1fr)`;
+  cw.innerHTML=ui.colW.map((v,i)=>`<input type="number" data-cw="${i}" value="${v}">`).join("");
+  rh.innerHTML=ui.rowH.map((v,i)=>`<input type="number" data-rh="${i}" value="${v}">`).join("");
+  document.getElementById("rowHLabel").style.display = ui.rows>1 ? "block" : "none";
+  rh.style.display = ui.rows>1 ? "grid" : "none";
+  cw.parentElement.querySelector("label").style.display = ui.cols>1 ? "block" : "none";
+  cw.style.display = ui.cols>1 ? "grid" : "none";
+
+  cw.querySelectorAll("[data-cw]").forEach(inp=>inp.addEventListener("input",()=>{
+    ui.colW[+inp.dataset.cw]=parseFloat(inp.value)||0; checkSizes(); livePreview();
+  }));
+  rh.querySelectorAll("[data-rh]").forEach(inp=>inp.addEventListener("input",()=>{
+    ui.rowH[+inp.dataset.rh]=parseFloat(inp.value)||0; checkSizes(); livePreview();
+  }));
+  checkSizes();
+}
+function checkSizes(){
+  const W=totalW(), H=totalH();
+  const sw=ui.colW.reduce((a,b)=>a+b,0), sh=ui.rowH.reduce((a,b)=>a+b,0);
+  const okW=Math.abs(sw-W)<1, okH=Math.abs(sh-H)<1;
+  document.querySelectorAll("[data-cw]").forEach(i=>i.classList.toggle("sz-bad",!okW));
+  document.querySelectorAll("[data-rh]").forEach(i=>i.classList.toggle("sz-bad",!okH));
+  const hint=document.getElementById("sizeHint");
+  let msg=[];
+  if(!okW) msg.push(`Колоните дават ${sw}мм, а ширината е ${W}мм (разлика ${(sw-W>0?"+":"")}${sw-W})`);
+  if(!okH) msg.push(`Редовете дават ${sh}мм, а височината е ${H}мм (разлика ${(sh-H>0?"+":"")}${sh-H})`);
+  hint.textContent = msg.length ? "⚠️ " + msg.join(" · ") : "Сборът съвпада с общия габарит.";
+  hint.style.color = msg.length ? "#a35b00" : "#999";
+  return okW && okH;
+}
+document.getElementById("autoBtn").addEventListener("click",()=>{ autoDistribute(); renderSizes(); livePreview(); });
+
+function resizeCells(){
+  const nc=ui.cols, nr=ui.rows, old=ui.cells;
+  const nw=[];
+  for(let r=0;r<nr;r++){ const row=[]; for(let c=0;c<nc;c++){ row.push((old[r]&&old[r][c])||"fix"); } nw.push(row); }
+  ui.cells=nw;
+}
+function renderCells(){
+  const el=document.getElementById("cellGrid");
+  el.style.gridTemplateColumns=`repeat(${ui.cols},1fr)`;
+  let h="";
+  for(let r=0;r<ui.rows;r++) for(let c=0;c<ui.cols;c++){
+    const t=CT[ui.cells[r][c]];
+    h+=`<div class="cell ${t.cls}" data-r="${r}" data-c="${c}"><span class="ic">${t.ic}</span>${t.label}</div>`;
+  }
+  el.innerHTML=h;
+  el.querySelectorAll(".cell").forEach(cell=>cell.addEventListener("click",()=>{
+    const r=+cell.dataset.r, c=+cell.dataset.c;
+    const i=CYCLE.indexOf(ui.cells[r][c]);
+    const was=ui.cells[r][c];
+    ui.cells[r][c]=CYCLE[(i+1)%CYCLE.length];
+    // Ако се появи или изчезне врата — предлагаме ново разпределение
+    if(was==="door" || ui.cells[r][c]==="door"){ autoDistribute(); renderSizes(); }
+    renderCells(); livePreview();
+  }));
+}
+function bindTabs(id,key){
+  document.querySelectorAll(`#${id} .tab`).forEach(t=>t.addEventListener("click",()=>{
+    document.querySelectorAll(`#${id} .tab`).forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    if(key==="cols"){ ui.cols=+t.dataset.col; resizeCells(); renderCells(); autoDistribute(); renderSizes(); }
+    if(key==="rows"){ ui.rows=+t.dataset.rw;  resizeCells(); renderCells(); autoDistribute(); renderSizes(); }
+    if(key==="thr")  ui.thr=t.dataset.thr==="1";
+    if(key==="rf"){ ui.reinf=t.dataset.rf; showReinfHint(); }
+    if(key==="shape"){
+      ui.shape=t.dataset.shape;
+      const isT=ui.shape==="trap";
+      document.getElementById("h2Wrap").style.display=isT?"block":"none";
+      document.getElementById("hLbl").textContent=isT?"Лява височина мм":"Височина мм";
+      if(isT){ // трапецът се поддържа само като една секция
+        ui.cols=1; ui.rows=1; resizeCells(); renderCells();
+        document.querySelectorAll("#colTabs .tab").forEach(x=>x.classList.toggle("active",x.dataset.col==="1"));
+        document.querySelectorAll("#rowTabs .tab").forEach(x=>x.classList.toggle("active",x.dataset.rw==="1"));
+      }
+    }
+    livePreview();
+  }));
+}
+bindTabs("reinfTabs","rf");
+bindTabs("colTabs","cols"); bindTabs("rowTabs","rows"); bindTabs("thrTabs","thr");
+document.querySelectorAll("#clientTabs .tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll("#clientTabs .tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active"); CLIENT=t.dataset.cl; showMkHint(); render();
+}));
+document.getElementById("markup").addEventListener("input",()=>{
+  const v=parseFloat(document.getElementById("markup").value);
+  MARKUP_PCT = isNaN(v)?0:v; showMkHint(); render();
+});
+function showMkHint(){
+  document.getElementById("mkHint").textContent =
+    CLIENT==="firm"
+      ? `Надценка ${MARKUP_PCT}% · водеща цена: БЕЗ ДДС (фирма ползва данъчен кредит)`
+      : `Надценка ${MARKUP_PCT}% · водеща цена: С ДДС (крайна за частно лице)`;
+}
+showMkHint(); bindTabs("shapeTabs","shape");
+renderCells(); autoDistribute(); renderSizes();
+
+/* ===== ГЕОМЕТРИЯ — решетка от секции ===== */
+function pc(L,A){return{L,A};}
+function trapGeo(W,H1,H2){
+  const dh=Math.abs(H1-H2);
+  const slant=Math.sqrt(W*W+dh*dh);
+  const alpha=Math.atan2(dh,W)*180/Math.PI;
+  return { slant, alpha,
+    hiCut:(90-alpha)/2,   // срез при по-високата страна
+    loCut:(90+alpha)/2 }; // срез при по-ниската страна
+}
+function fmtA(a){ return a.toFixed(1).replace(/\.0$/,""); }
+
+function geometry(m){
+  if(m.shape==="trap") return geometryTrap(m);
+  const nc=m.cols, nr=m.rows;
+  const o={frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[],glass:[],hw:{},problems:[]};
+
+  // Каса — по габарит, 45/45; армировка в касата
+  o.frame.push(pc(m.W,"45/45"),pc(m.W,"45/45"),pc(m.H,"45/45"),pc(m.H,"45/45"));
+  o.reinf.push(pc(m.W-DED.reinf,"90/90"),pc(m.W-DED.reinf,"90/90"),
+               pc(m.H-DED.reinf,"90/90"),pc(m.H-DED.reinf,"90/90"));
+
+  const innerW=m.W-2*FRAME_D, innerH=m.H-2*FRAME_D;
+  if(innerW<=0||innerH<=0){ o.problems.push("Отворът е по-малък от двойната ширина на касата (144мм)."); return o; }
+
+  // Делители — 90/90
+  for(let c=1;c<nc;c++) o.mullion.push(pc(innerH,"90/90"));
+  for(let r=1;r<nr;r++) o.mullion.push(pc(innerW,"90/90"));
+
+  // Реални размери на секциите (редактируеми); ако липсват — равно деление
+  const colW = (m.colW && m.colW.length===nc) ? m.colW : Array(nc).fill(m.W/nc);
+  const rowH = (m.rowH && m.rowH.length===nr) ? m.rowH : Array(nr).fill(m.H/nr);
+
+  for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
+    const share=colW[c], shareH=rowH[r];
+    if(share-SASH_SUB<=0 || shareH-SASH_SUB<=0){
+      o.problems.push(`Секция ${c+1}×${r+1} е ${Math.round(share)}×${Math.round(shareH)}мм — твърде малка (нужни са поне ${SASH_SUB+1}мм).`);
+      return o;
+    }
+    const type=CT[m.cells[r][c]];
+    if(type.key==="fix"){
+      // Фикс: стъкло и държач се вземат от секцията
+      o.glass.push({w:share-DED.glass,h:shareH-DED.glass,n:1});
+      const bw=share-DED.bead, bh=shareH-DED.bead;
+      o.bead.push(pc(bw,"45/45"),pc(bw,"45/45"),pc(bh,"45/45"),pc(bh,"45/45"));
+    } else {
+      const sw=share-SASH_SUB+SASH_ADD, sh=shareH-SASH_SUB+SASH_ADD;
+      const bucket=type.door?"sashDoor":"sashWin";
+      const isBottom = r===nr-1;
+      const botAngle = (m.threshold && isBottom) ? "45/90" : "45/45";
+      o[bucket].push(pc(sw,"45/45"),pc(sw,botAngle),pc(sh,"45/45"),pc(sh,"45/45"));
+      o.reinf.push(pc(sw-DED.reinf,"90/90"),pc(sw-DED.reinf,"90/90"),
+                   pc(sh-DED.reinf,"90/90"),pc(sh-DED.reinf,"90/90"));
+      o.bead.push(pc(sw-DED.bead,"45/45"),pc(sw-DED.bead,"45/45"),
+                  pc(sh-DED.bead,"45/45"),pc(sh-DED.bead,"45/45"));
+      o.glass.push({w:sw-DED.glass,h:sh-DED.glass,n:1});
+      if(type.hw) o.hw[type.hw]=(o.hw[type.hw]||0)+1;
+    }
+  }
+  o.glass.forEach(g=>{ if(g.w<=0||g.h<=0)
+    o.problems.push(`Стъкло ${Math.round(g.w)}×${Math.round(g.h)}мм — секцията е твърде малка.`); });
+  return o;
+}
+
+/* ===== ГЕОМЕТРИЯ — трапец (наклонен горен ръб), една секция ===== */
+function geometryTrap(m){
+  const o={frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[],glass:[],hw:{},problems:[]};
+  const W=m.W, H1=m.H, H2=m.H2;
+  if(W<=0||H1<=0||H2<=0){ o.problems.push("Въведи и трите размера (ширина, лява и дясна височина)."); return o; }
+  if(Math.min(H1,H2)-2*FRAME_D<=0 || W-2*FRAME_D<=0){ o.problems.push("Отворът е твърде малък за 72мм каса."); return o; }
+
+  const t=trapGeo(W,H1,H2);
+  const hiLeft = H1>=H2;
+  const hiA=fmtA(t.hiCut), loA=fmtA(t.loCut);
+
+  // Каса: долно (45/45), лява и дясна вертикала, наклонена горна
+  o.frame.push(pc(W,"45/45"));
+  o.frame.push(pc(H1, hiLeft ? "45/"+hiA : "45/"+loA));
+  o.frame.push(pc(H2, hiLeft ? "45/"+loA : "45/"+hiA));
+  o.frame.push(pc(t.slant, hiA+"/"+loA));
+
+  // Армировка — същите елементи, минус 100
+  [[W,"90/90"],[H1,"90/90"],[H2,"90/90"],[t.slant,"90/90"]].forEach(([L,A])=>
+    o.reinf.push(pc(Math.max(0,L-DED.reinf),A)));
+
+  const type=CT[m.cells[0][0]];
+  if(type.key==="fix"){
+    const gW=W-DED.glass, gH1=H1-DED.glass, gH2=H2-DED.glass;
+    o.glass.push({w:gW,h:(gH1+gH2)/2,n:1,trap:true,h1:gH1,h2:gH2});
+    const bt=trapGeo(W-DED.bead,H1-DED.bead,H2-DED.bead);
+    o.bead.push(pc(W-DED.bead,"45/45"),pc(H1-DED.bead,"45/"+fmtA(bt.hiCut)),
+                pc(H2-DED.bead,"45/"+fmtA(bt.loCut)),pc(bt.slant,fmtA(bt.hiCut)+"/"+fmtA(bt.loCut)));
+  } else {
+    const sW=W-SASH_SUB+SASH_ADD, sH1=H1-SASH_SUB+SASH_ADD, sH2=H2-SASH_SUB+SASH_ADD;
+    const st=trapGeo(sW,sH1,sH2);
+    const sA=fmtA(st.hiCut), sB=fmtA(st.loCut);
+    const bucket=type.door?"sashDoor":"sashWin";
+    const botA=m.threshold?"45/90":"45/45";
+    o[bucket].push(pc(sW,botA), pc(sH1,"45/"+(hiLeft?sA:sB)), pc(sH2,"45/"+(hiLeft?sB:sA)), pc(st.slant,sA+"/"+sB));
+    [[sW],[sH1],[sH2],[st.slant]].forEach(([L])=>o.reinf.push(pc(Math.max(0,L-DED.reinf),"90/90")));
+    const bt2=trapGeo(sW-DED.bead,sH1-DED.bead,sH2-DED.bead);
+    o.bead.push(pc(sW-DED.bead,"45/45"),pc(sH1-DED.bead,"45/"+fmtA(bt2.hiCut)),
+                pc(sH2-DED.bead,"45/"+fmtA(bt2.loCut)),pc(bt2.slant,fmtA(bt2.hiCut)+"/"+fmtA(bt2.loCut)));
+    const g1=sH1-DED.glass, g2=sH2-DED.glass;
+    o.glass.push({w:sW-DED.glass,h:(g1+g2)/2,n:1,trap:true,h1:g1,h2:g2});
+    if(type.hw) o.hw[type.hw]=(o.hw[type.hw]||0)+1;
+  }
+  o.glass.forEach(g=>{ if(g.w<=0||g.h1<=0||g.h2<=0)
+    o.problems.push("Стъклото излиза с нулев или отрицателен размер — отворът е твърде малък."); });
+  return o;
+}
+
+/* ===== СКИЦА ===== */
+function sketchSVG(m){
+  if(m.shape==="trap") return sketchTrap(m);
+  const PAD_L=34,PAD_B=26,PAD_T=8,PAD_R=8,maxW=250,maxH=200;
+  const ar=m.W/m.H; let dw,dh;
+  if(ar>=maxW/maxH){dw=maxW;dh=maxW/ar;}else{dh=maxH;dw=maxH*ar;}
+  const X=PAD_L,Y=PAD_T,W=dw,H=dh,vbW=dw+PAD_L+PAD_R,vbH=dh+PAD_T+PAD_B;
+  const t=5.5,mt=3;
+  let s=`<svg viewBox="0 0 ${vbW.toFixed(1)} ${vbH.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${vbW.toFixed(0)}px;height:auto">`;
+  s+=`<g fill="none" stroke="#1a1a1a" stroke-linecap="square">`;
+  s+=`<rect x="${X}" y="${Y}" width="${W}" height="${H}" stroke-width="1.6"/>`;
+  s+=`<rect x="${X+t}" y="${Y+t}" width="${W-2*t}" height="${H-2*t}" stroke-width="0.9"/>`;
+  const iX=X+t,iY=Y+t,iW=W-2*t,iH=H-2*t;
+  const nc=m.cols,nr=m.rows;
+  const colW=(m.colW&&m.colW.length===nc)?m.colW:Array(nc).fill(m.W/nc);
+  const rowH=(m.rowH&&m.rowH.length===nr)?m.rowH:Array(nr).fill(m.H/nr);
+  const sumW=colW.reduce((a,b)=>a+b,0)||1, sumH=rowH.reduce((a,b)=>a+b,0)||1;
+  const availW=iW-(nc-1)*mt, availH=iH-(nr-1)*mt;
+  const wPx=colW.map(v=>v/sumW*availW), hPx=rowH.map(v=>v/sumH*availH);
+  const xAt=i=>iX+wPx.slice(0,i).reduce((a,b)=>a+b,0)+i*mt;
+  const yAt=i=>iY+hPx.slice(0,i).reduce((a,b)=>a+b,0)+i*mt;
+  for(let c=1;c<nc;c++) s+=`<rect x="${xAt(c)-mt}" y="${iY}" width="${mt}" height="${iH}" stroke-width="0.9"/>`;
+  for(let r=1;r<nr;r++) s+=`<rect x="${iX}" y="${yAt(r)-mt}" width="${iW}" height="${mt}" stroke-width="0.9"/>`;
+
+  for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
+    const x=xAt(c), y=yAt(r), cw=wPx[c], ch=hPx[r];
+    const type=m.cells[r][c];
+    if(type==="fix"){
+      const cx=x+cw/2,cy=y+ch/2,rr=Math.min(6,cw/5,ch/5);
+      s+=`<line x1="${cx-rr}" y1="${cy}" x2="${cx+rr}" y2="${cy}" stroke-width="0.9"/>`;
+      s+=`<line x1="${cx}" y1="${cy-rr}" x2="${cx}" y2="${cy+rr}" stroke-width="0.9"/>`;
+    } else {
+      const t2=3.2;
+      s+=`<rect x="${x}" y="${y}" width="${cw}" height="${ch}" stroke-width="1.1"/>`;
+      s+=`<rect x="${x+t2}" y="${y+t2}" width="${cw-2*t2}" height="${ch-2*t2}" stroke-width="0.6"/>`;
+      const L=x+t2,R=x+cw-t2,T=y+t2,B=y+ch-t2;
+      const hingeLeft = c < nc/2;
+      // Отваряемо / врата: връх към пантата
+      if(type==="turn"||type==="tt"||type==="door"){
+        const ax=hingeLeft?L:R, bx=hingeLeft?R:L;
+        s+=`<path d="M ${bx} ${T} L ${ax} ${(T+B)/2} L ${bx} ${B}" stroke-width="0.8" stroke-dasharray="3 2.5"/>`;
+      }
+      // Падащо / кемферно: връх надолу (панта долу)
+      if(type==="tilt"||type==="tt"){
+        s+=`<path d="M ${L} ${T} L ${(L+R)/2} ${B} L ${R} ${T}" stroke-width="0.8" stroke-dasharray="3 2.5"/>`;
+      }
+      if(type==="door"){
+        s+=`<line x1="${hingeLeft?R-5:L+5}" y1="${(T+B)/2-4}" x2="${hingeLeft?R-5:L+5}" y2="${(T+B)/2+4}" stroke-width="1.8"/>`;
+      }
+    }
+  }
+  s+=`</g>`;
+  const dim="#9a9a9a",by=Y+H+14,lx=X-16;
+  s+=`<g stroke="${dim}" stroke-width="0.7">`;
+  s+=`<line x1="${X}" y1="${Y+H+3}" x2="${X}" y2="${by+4}"/><line x1="${X+W}" y1="${Y+H+3}" x2="${X+W}" y2="${by+4}"/>`;
+  s+=`<line x1="${X}" y1="${by}" x2="${X+W}" y2="${by}"/>`;
+  s+=`<line x1="${X-3}" y1="${Y}" x2="${lx-4}" y2="${Y}"/><line x1="${X-3}" y1="${Y+H}" x2="${lx-4}" y2="${Y+H}"/>`;
+  s+=`<line x1="${lx}" y1="${Y}" x2="${lx}" y2="${Y+H}"/></g>`;
+  s+=`<text x="${X+W/2}" y="${by+9}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial">${m.W}</text>`;
+  s+=`<text x="${lx-3}" y="${Y+H/2}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial" transform="rotate(-90 ${lx-3} ${Y+H/2})">${m.H}</text>`;
+  return s+`</svg>`;
+}
+
+function sketchTrap(m){
+  const PAD_L=36,PAD_B=26,PAD_T=8,PAD_R=26,maxW=250,maxH=200;
+  const W=m.W,H1=m.H,H2=m.H2,Hm=Math.max(H1,H2);
+  const ar=W/Hm; let dw,dh;
+  if(ar>=maxW/maxH){dw=maxW;dh=maxW/ar;}else{dh=maxH;dw=maxH*ar;}
+  const sx=dw/W, sy=dh/Hm;
+  const X=PAD_L,Yb=PAD_T+dh; // долна линия
+  const vbW=dw+PAD_L+PAD_R, vbH=dh+PAD_T+PAD_B;
+  const P1=[X, Yb], P2=[X+dw, Yb], P3=[X+dw, Yb-H2*sy], P4=[X, Yb-H1*sy];
+  const poly=(pts,sw)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")}" stroke-width="${sw}"/>`;
+  const inset=(pts,d)=>{
+    const cx=(pts[0][0]+pts[1][0]+pts[2][0]+pts[3][0])/4, cy=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
+    return pts.map(([x,y])=>{const L=Math.hypot(x-cx,y-cy)||1; return [x+(cx-x)/L*d, y+(cy-y)/L*d];});
+  };
+  let s=`<svg viewBox="0 0 ${vbW.toFixed(1)} ${vbH.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${vbW.toFixed(0)}px;height:auto">`;
+  s+=`<g fill="none" stroke="#1a1a1a" stroke-linejoin="miter">`;
+  s+=poly([P1,P2,P3,P4],1.6);
+  s+=poly(inset([P1,P2,P3,P4],6),0.9);
+  const type=m.cells[0][0];
+  const inner=inset([P1,P2,P3,P4],6);
+  const cx=(inner[0][0]+inner[1][0]+inner[2][0]+inner[3][0])/4;
+  const cy=(inner[0][1]+inner[1][1]+inner[2][1]+inner[3][1])/4;
+  if(type==="fix"){
+    s+=`<line x1="${cx-6}" y1="${cy}" x2="${cx+6}" y2="${cy}" stroke-width="0.9"/>`;
+    s+=`<line x1="${cx}" y1="${cy-6}" x2="${cx}" y2="${cy+6}" stroke-width="0.9"/>`;
+  } else {
+    const sash=inset([P1,P2,P3,P4],10);
+    s+=poly(sash,1.1);
+    s+=poly(inset([P1,P2,P3,P4],13.5),0.6);
+    const hingeLeft=H1>=H2;
+    const a=hingeLeft?[(sash[0][0]+sash[3][0])/2,(sash[0][1]+sash[3][1])/2]:[(sash[1][0]+sash[2][0])/2,(sash[1][1]+sash[2][1])/2];
+    const b1=hingeLeft?sash[1]:sash[0], b2=hingeLeft?sash[2]:sash[3];
+    s+=`<path d="M ${b1[0].toFixed(1)} ${b1[1].toFixed(1)} L ${a[0].toFixed(1)} ${a[1].toFixed(1)} L ${b2[0].toFixed(1)} ${b2[1].toFixed(1)}" stroke-width="0.8" stroke-dasharray="3 2.5"/>`;
+  }
+  s+=`</g>`;
+  const dim="#9a9a9a", by=Yb+14, lx=X-16, rx=X+dw+16;
+  s+=`<g stroke="${dim}" stroke-width="0.7">`;
+  s+=`<line x1="${X}" y1="${Yb+3}" x2="${X}" y2="${by+4}"/><line x1="${X+dw}" y1="${Yb+3}" x2="${X+dw}" y2="${by+4}"/>`;
+  s+=`<line x1="${X}" y1="${by}" x2="${X+dw}" y2="${by}"/>`;
+  s+=`<line x1="${lx}" y1="${P4[1]}" x2="${lx}" y2="${Yb}"/>`;
+  s+=`<line x1="${rx}" y1="${P3[1]}" x2="${rx}" y2="${Yb}"/></g>`;
+  s+=`<text x="${X+dw/2}" y="${by+9}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial">${W}</text>`;
+  s+=`<text x="${lx-3}" y="${(P4[1]+Yb)/2}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial" transform="rotate(-90 ${lx-3} ${(P4[1]+Yb)/2})">${H1}</text>`;
+  s+=`<text x="${rx+8}" y="${(P3[1]+Yb)/2}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial" transform="rotate(-90 ${rx+8} ${(P3[1]+Yb)/2})">${H2}</text>`;
+  return s+`</svg>`;
+}
+
+function currentModel(){
+  return { W:parseFloat(document.getElementById("w").value)||0,
+           H:parseFloat(document.getElementById("h").value)||0,
+           H2:parseFloat(document.getElementById("h2").value)||0,
+           shape:ui.shape,
+           cols:ui.cols, rows:ui.rows, cells:ui.cells.map(r=>[...r]),
+           colW:[...ui.colW], rowH:[...ui.rowH], reinf:ui.reinf,
+           threshold:ui.thr, std:ui.std, qty:1 };
+}
+function livePreview(){
+  const m=currentModel(), el=document.getElementById("livePreview");
+  if(m.W<=0||m.H<=0){ el.innerHTML='<div style="color:#bbb;font-size:12px">Въведи размери</div>'; return; }
+  el.innerHTML=sketchSVG(m);
+}
+document.getElementById("w").addEventListener("input",()=>{ autoDistribute(); renderSizes(); livePreview(); });
+document.getElementById("h").addEventListener("input",()=>{ autoDistribute(); renderSizes(); livePreview(); });
+
+document.getElementById("addBtn").addEventListener("click",()=>{
+  const m=currentModel();
+  m.qty=parseInt(document.getElementById("qty").value)||1;
+  const wEl=document.getElementById("addWarn");
+  if(m.W<=0||m.H<=0){ wEl.innerHTML='<div class="warn">Въведи валидни размери.</div>'; return; }
+  if(!checkSizes()){ wEl.innerHTML='<div class="warn">⚠️ Сборът на секциите не съвпада с общия габарит — поправи размерите или натисни „Изравни автоматично“.</div>'; return; }
+  const g=geometry(m);
+  if(g.problems.length){ wEl.innerHTML='<div class="warn">⚠️ '+g.problems.join("<br>")+'</div>'; return; }
+  wEl.innerHTML=""; modules.push(m); render();
+});
+
+function pack(pieces,barLen){
+  const s=[...pieces].sort((a,b)=>b.L-a.L); const bars=[];
+  s.forEach(p=>{ let placed=false;
+    for(const b of bars){ const need=p.L+(b.used.length?KERF:0);
+      if(b.remaining>=need){ b.used.push(p); b.remaining-=need; placed=true; break; } }
+    if(!placed) bars.push({used:[p],remaining:barLen-p.L}); });
+  return bars;
+}
+
+function render(){
+  if(!modules.length){
+    ["modList","brk","cut","glassList"].forEach(id=>document.getElementById(id).innerHTML='<div class="empty">—</div>');
+    document.getElementById("modList").innerHTML='<div class="empty">Още няма добавени елементи.</div>';
+    document.getElementById("grand").textContent="€0.00";
+    document.getElementById("hwWarn").style.display="none";
+    return;
+  }
+  const all={frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[]};
+  const cost={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0,glass:0,hw:0};
+  const lm={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0};
+  let glassArea=0; const glassOrders={}; const hwCount={};
+  let anyUnconfirmedHW=false, anyUnconfirmedReinf=false;
+
+  modules.forEach(m=>{
+    const s=STANDARDS[m.std], g=GLASS[s.glass], geo=geometry(m);
+    for(let i=0;i<m.qty;i++){
+      all.frame.push(...geo.frame); all.sashWin.push(...geo.sashWin);
+      all.sashDoor.push(...geo.sashDoor); all.mullion.push(...geo.mullion);
+      all.bead.push(...geo.bead); all.reinf.push(...geo.reinf);
+    }
+    const sum=a=>a.reduce((x,y)=>x+y.L,0)/1000*m.qty;
+    const fL=sum(geo.frame),swL=sum(geo.sashWin),sdL=sum(geo.sashDoor),
+          muL=sum(geo.mullion),bL=sum(geo.bead),rL=sum(geo.reinf);
+    lm.frame+=fL; lm.sashWin+=swL; lm.sashDoor+=sdL; lm.mullion+=muL; lm.bead+=bL; lm.reinf+=rL;
+    cost.frame+=fL*P.frame[s.color];
+    cost.sashWin+=swL*P.sashWin[s.color];
+    cost.sashDoor+=sdL*P.sashDoor[s.color];
+    cost.mullion+=muL*P.mullion[s.color];
+    cost.bead+=bL*P.bead[g.bead][s.color];
+    cost.reinf+=rL*P.reinf[m.reinf||"1.2"].price;
+    if(!P.reinf[m.reinf||"1.2"].confirmed) anyUnconfirmedReinf=true;
+
+    let mg=0;
+    geo.glass.forEach(gl=>{
+      const a=gl.w*gl.h/1e6*gl.n*m.qty; mg+=a; glassArea+=a;
+      const k=`${g.name}|${gl.trap?Math.round(gl.w)+'×'+Math.round(gl.h1)+'/'+Math.round(gl.h2)+' (трапец)':Math.round(gl.w)+'×'+Math.round(gl.h)}`;
+      glassOrders[k]=(glassOrders[k]||0)+gl.n*m.qty;
+    });
+    cost.glass+=mg*g.price;
+
+    let mh=0;
+    Object.entries(geo.hw).forEach(([k,n])=>{
+      const tot=n*m.qty; hwCount[k]=(hwCount[k]||0)+tot;
+      mh+=tot*HW[k].price;
+      if(!HW[k].confirmed) anyUnconfirmedHW=true;
+    });
+    cost.hw+=mh;
+
+    m._mat=(fL*P.frame[s.color]+swL*P.sashWin[s.color]+sdL*P.sashDoor[s.color]
+      +muL*P.mullion[s.color]+bL*P.bead[g.bead][s.color]+rL*P.reinf[m.reinf||"1.2"].price
+      +mg*g.price+mh)/m.qty;
+    m._geo=geo;
+  });
+
+  const material=Object.values(cost).reduce((a,b)=>a+b,0);
+  const withMk=material*MK(), withVat=withMk*VAT;
+  const lead = CLIENT==="person" ? withVat : withMk;
+  const other = CLIENT==="person" ? withMk : withVat;
+  document.getElementById("grand").textContent="€"+lead.toFixed(2);
+  document.querySelector(".total .lbl").textContent =
+    CLIENT==="person" ? "Крайна цена за клиента (с ДДС)" : "Продажна цена без ДДС (фирма)";
+  let sub=document.querySelector(".total .sub");
+  if(!sub){ sub=document.createElement("div"); sub.className="sub"; document.querySelector(".total").appendChild(sub); }
+  sub.textContent = (CLIENT==="person" ? "без ДДС: €" : "с ДДС: €") + other.toFixed(2);
+
+  document.getElementById("modList").innerHTML=modules.map((m,i)=>{
+    const s=STANDARDS[m.std];
+    const flat=m.cells.flat().map(k=>CT[k].label);
+    const counts={}; flat.forEach(l=>counts[l]=(counts[l]||0)+1);
+    const desc=Object.entries(counts).map(([l,n])=>n>1?`${n}× ${l}`:l).join(" · ");
+    const unitNet=m._mat*MK(), unitGross=unitNet*VAT;
+    const unit = CLIENT==="person" ? unitGross : unitNet;
+    const gl=m._geo.glass.map(x=>x.trap?`${Math.round(x.w)}×${Math.round(x.h1)}/${Math.round(x.h2)} трапец`:`${Math.round(x.w)}×${Math.round(x.h)}`).join(", ");
+    return `<div class="mod">
+      <div class="mod-head"><span class="mod-title">${m.shape==="trap"?m.W+"×"+m.H+"/"+m.H2:m.W+"×"+m.H} ${m.qty>1?"× "+m.qty:""}</span>
+      <button class="btn small danger no-print" data-del="${i}">Изтрий</button></div>
+      <div class="mod-sketch">${sketchSVG(m)}</div>
+      <div class="mod-detail">${m.shape==="trap"?"трапец":m.cols+"×"+m.rows+" секции"} · ${desc}${m.threshold?" · алум. праг":""}<br>${s.name}</div>
+      <div class="glass-list">Стъкла: ${gl}</div>
+      <div class="mod-price">€${unit.toFixed(2)}/бр · общо €${(unit*m.qty).toFixed(2)}
+        <span style="font-weight:400;color:#999;font-size:12px">(${CLIENT==="person"?"с ДДС":"без ДДС"})</span></div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
+    modules.splice(parseInt(b.dataset.del),1); render();
+  }));
+
+  /* Двуколонна разбивка: без ДДС | с ДДС */
+  const r=(n,q,net,bold,isCost)=>{
+    const gross=net*VAT;
+    return `<div class="brk2${bold?' b2-bold':''}${isCost?' is-cost':''}">
+      <span class="n2">${n}${q?` <span style="color:#bbb">(${q})</span>`:""}</span>
+      <span class="v2">€${net.toFixed(2)}</span>
+      <span class="v2">€${gross.toFixed(2)}</span></div>`;
+  };
+  let b=`<div class="brk2 b2-head"><span class="n2">Позиция</span><span class="v2">Без ДДС</span><span class="v2">С ДДС</span></div>`;
+  b+=`<div class="b2-sec b2-sec-cost">Производство — материал</div>`;
+  if(lm.frame) b+=r("Каса",lm.frame.toFixed(2)+" лм",cost.frame,false,true);
+  if(lm.sashWin) b+=r("Крило прозорец",lm.sashWin.toFixed(2)+" лм",cost.sashWin,false,true);
+  if(lm.sashDoor) b+=r("Крило врата",lm.sashDoor.toFixed(2)+" лм",cost.sashDoor,false,true);
+  if(lm.mullion) b+=r("Делител",lm.mullion.toFixed(2)+" лм",cost.mullion,false,true);
+  if(lm.bead) b+=r("Стъклодържател",lm.bead.toFixed(2)+" лм",cost.bead,false,true);
+  if(lm.reinf){ const rfSet=[...new Set(modules.map(x=>x.reinf||"1.2"))].join("/"); b+=r("Армировка "+rfSet+"мм"+(anyUnconfirmedReinf?" ⚠️":""),lm.reinf.toFixed(2)+" лм",cost.reinf,false,true); }
+  b+=r("Стъкло",glassArea.toFixed(2)+" м²",cost.glass,false,true);
+  Object.entries(hwCount).forEach(([k,n])=>{ b+=r(HW[k].name+(HW[k].confirmed?"":" ⚠️"),n+" бр.",n*HW[k].price,false,true); });
+  b+=r("Себестойност на производството","",material,true,true);
+
+  b+=`<div class="b2-sec b2-sec-cost">Надценка — печалба, транспорт, монтаж</div>`;
+  const mkAmount = material*(MARKUP_PCT/100);
+  b+=r(`Надценка ${MARKUP_PCT}%`,"",mkAmount,false,true);
+  b+=r("ПРОДАЖНА ЦЕНА","",withMk,true);
+  document.getElementById("brk").innerHTML=b;
+
+  const hw=document.getElementById("hwWarn");
+  if(anyUnconfirmedHW){
+    hw.style.display="block";
+    hw.innerHTML="⚠️ Обковът за падащо, кемферно и врата е сметнат по ставката за обикновено отваряемо (23€), защото нямаме потвърдени реални цени за тях. Кемферният обков в практиката е по-скъп — тези редове ще са подценени, докато не дадеш реалните цени.";
+  } else if(anyUnconfirmedReinf){
+    hw.style.display="block";
+    hw.innerHTML="⚠️ За 2.0мм армировка нямаме потвърдена цена — сметната е по ставката за 1.5мм (3.00 €/лм). Реалната цена е почти сигурно по-висока при по-дебела стомана.";
+  } else hw.style.display="none";
+
+  const groups=[["Каса",all.frame,BAR.pvc,"PVC 6.5м"],["Крило прозорец",all.sashWin,BAR.pvc,"PVC 6.5м"],
+    ["Крило врата",all.sashDoor,BAR.pvc,"PVC 6.5м"],["Делител",all.mullion,BAR.pvc,"PVC 6.5м"],
+    ["Стъклодържател",all.bead,BAR.bead,"6м"],["Армировка",all.reinf,BAR.metal,"метал 6м"]].filter(g=>g[1].length);
+
+  document.getElementById("cut").innerHTML=groups.map(([nm,pcs,barLen,note])=>{
+    const bars=pack(pcs,barLen);
+    const util=(pcs.reduce((a,x)=>a+x.L,0)/(bars.length*barLen)*100).toFixed(1);
+    let h=`<div class="cut-grp"><div class="cut-nm">${nm} — ${bars.length} прът${bars.length===1?"":"а"}</div><div class="cut-sub">${note} · оползотворяване ${util}%</div>`;
+    bars.forEach((bar,i)=>{
+      h+=`<div class="blbl">Прът ${i+1}</div><div class="bar">`;
+      bar.used.forEach(p=>{h+=`<div class="pc" style="width:${(p.L/barLen*100).toFixed(2)}%">${Math.round(p.L)}<span style="font-size:7.5px;opacity:.65">${p.A}</span></div>`;});
+      if(bar.remaining>0){ const l=bar.remaining>=MIN_OFFCUT?Math.round(bar.remaining)+" склад":Math.round(bar.remaining)+" брак";
+        h+=`<div class="wst" style="width:${(bar.remaining/barLen*100).toFixed(2)}%">${l}</div>`; }
+      h+=`</div>`;
+    });
+    return h+`</div>`;
+  }).join("");
+
+  document.getElementById("glassList").innerHTML=Object.entries(glassOrders).map(([k,n])=>{
+    const [ty,sz]=k.split("|");
+    return `<div class="brk"><span class="n">${ty}<br><b style="color:#1a1a1a">${sz}мм</b></span><span class="v">${n} бр.</span></div>`;
+  }).join("");
+}
+
+
+/* ===== ДОКУМЕНТ ===== */
+let DOCMODE="client";
+document.querySelectorAll("#docTabs .tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll("#docTabs .tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active"); DOCMODE=t.dataset.doc;
+  document.getElementById("docHint").textContent = DOCMODE==="client"
+    ? "Офертата за клиент показва скици и цени, без вътрешния разкрой и себестойността."
+    : "Работният лист показва скици, разкрой и списък стъкла — без цени.";
+}));
+
+function initDoc(){
+  const d=new Date();
+  const iso=x=>x.toISOString().slice(0,10);
+  document.getElementById("cDate").value=iso(d);
+  const v=new Date(d); v.setDate(v.getDate()+14);
+  document.getElementById("cValid").value=iso(v);
+  const n=String(Math.floor(Math.random()*9000)+1000);
+  document.getElementById("cOffer").value=`TP-${d.getFullYear()}-${n}`;
+}
+initDoc();
+
+function buildDocHeader(){
+  const g=id=>(document.getElementById(id).value||"").trim();
+  document.getElementById("dhTitle").textContent =
+    DOCMODE==="client" ? `ОФЕРТА ${g("cOffer")}` : `РАБОТЕН ЛИСТ ${g("cOffer")}`;
+  const rows=[];
+  if(g("cName")) rows.push(`<b>Клиент:</b> ${g("cName")}${g("cEik")?` · ЕИК/ДДС: ${g("cEik")}`:""}`);
+  if(g("cAddr")) rows.push(`<b>Обект:</b> ${g("cAddr")}`);
+  const contact=[g("cPhone"),g("cMail")].filter(Boolean).join(" · ");
+  if(contact) rows.push(`<b>Контакт:</b> ${contact}`);
+  const dates=[];
+  if(g("cDate")) dates.push(`Дата: ${g("cDate")}`);
+  if(g("cValid") && DOCMODE==="client") dates.push(`Валидна до: ${g("cValid")}`);
+  if(dates.length) rows.push(dates.join(" · "));
+  let html=rows.join("<br>");
+  if(g("cNote")) html+=`<div class="dh-note">${g("cNote")}</div>`;
+  document.getElementById("dhClient").innerHTML=html;
+}
+
+document.getElementById("printBtn").addEventListener("click",()=>{
+  if(!modules.length){ alert("Добави поне един елемент, преди да генерираш документ."); return; }
+  buildDocHeader();
+  document.body.classList.remove("doc-client","doc-shop");
+  document.body.classList.add(DOCMODE==="client"?"doc-client":"doc-shop");
+  window.print();
+});
+
+livePreview(); render();
+
+/* PWA: работи само от HTTPS (или localhost), не от file://. */
+let installPrompt;
+const installBtn=document.getElementById("installBtn");
+window.addEventListener("beforeinstallprompt",event=>{
+  event.preventDefault();
+  installPrompt=event;
+  installBtn.classList.add("visible");
+});
+installBtn.addEventListener("click",async()=>{
+  if(!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt=null;
+  installBtn.classList.remove("visible");
+});
+window.addEventListener("appinstalled",()=>installBtn.classList.remove("visible"));
+if("serviceWorker" in navigator && location.protocol !== "file:"){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js"));
+}
+</script>
+</body>
+</html>
