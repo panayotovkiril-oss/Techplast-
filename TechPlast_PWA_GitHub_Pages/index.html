@@ -74,10 +74,22 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
 .warn{font-size:12px;color:#8a5a00;background:#fff8e1;border:1px solid #ffe9a8;padding:9px 11px;border-radius:7px;margin-top:9px;line-height:1.45}
 .empty{text-align:center;color:#bbb;padding:22px;font-size:14px}
 .glass-list{font-size:12px;color:#777;margin-top:4px;line-height:1.5}
+.live-price{margin-top:10px;border-radius:12px;background:linear-gradient(135deg,#111827,#1f2937);color:#fff;padding:14px 16px;display:none}
+.live-price.on{display:block}
+.lp-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.lp-num{font-size:26px;font-weight:800;color:#FFD700;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.lp-lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px}
+.lp-rows{margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,.12);font-size:11.5px;color:#cbd5e1;line-height:1.65}
+.lp-rows b{color:#fff;font-weight:700}
+.lp-bad{background:linear-gradient(135deg,#7f1d1d,#991b1b)}
 .preview-box{background:#fff;border:1px solid #eee;border-radius:8px;padding:12px;margin-top:10px;text-align:center}
 /* Решетка на секциите */
 .cellgrid{display:grid;gap:6px;margin:10px 0}
 .cell{border:2px solid #ddd;border-radius:7px;padding:9px 4px;text-align:center;cursor:pointer;background:#fafafa;font-size:11px;font-weight:600;line-height:1.3;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hinge-btn{margin-top:5px;font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.12);color:inherit;cursor:pointer;letter-spacing:.3px}
+.cell.t-fix .hinge-btn{border-color:#d7dee8;background:#fff;color:#64748b}
+.hinge-btn:hover{background:rgba(255,255,255,.24)}
 .cell .ic{font-size:15px;margin-bottom:2px}
 .szgrid{display:grid;gap:6px;margin-bottom:8px}
 .szgrid input{padding:10px;font-size:15px}
@@ -120,6 +132,40 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
   /* режим „работен лист" — крие цените */
   body.doc-shop #brkCard,body.doc-shop .total,body.doc-shop .mod-price{display:none!important}
 }
+
+/* ===== ИНТЕРАКТИВНА СКИЦА ===== */
+.hit-cell{cursor:pointer}
+.hit-cell:hover{fill:rgba(246,201,14,.20)}
+.hit-hinge{fill:rgba(246,201,14,.85);stroke:#1a1a1a;stroke-width:1.1;cursor:pointer}
+.hit-hinge:hover{fill:#FFD700;r:9}
+#livePreview svg{max-width:100%;height:auto}
+.sketch-tip{font-size:11px;color:var(--muted);margin-top:8px;text-align:center;line-height:1.5}
+
+/* ===== ГРУПИ ПО ПОМЕЩЕНИЕ ===== */
+.room-grp{margin-bottom:16px}
+.room-hd{display:flex;justify-content:space-between;align-items:baseline;padding:9px 13px;margin-bottom:9px;
+  border-radius:9px;background:linear-gradient(135deg,#111827,#1f2937);color:#fff;
+  font-weight:800;font-size:13px;letter-spacing:.3px}
+.room-sum{font-size:11.5px;font-weight:700;color:#FFD700;font-variant-numeric:tabular-nums}
+
+/* ===== СГЪВАНЕ И КОМПАКТЕН РЕЖИМ ===== */
+.fold-btn{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  padding:5px 11px;border-radius:20px;border:1.5px solid #dbe3ee;background:#fff;color:#64748b;cursor:pointer}
+.fold-btn:hover{border-color:#b8c6d8;color:#334155}
+.fold-btn.on{background:#111827;border-color:#111827;color:#FFD700}
+.folded{display:none}
+body.compact .mod-sketch{display:none}
+body.compact .mod{padding:9px 12px}
+body.compact .mod-detail,body.compact .glass-list{font-size:11.5px}
+body.compact .mod-head{margin-bottom:2px}
+
+/* ===== КАРТИ ЗА СИСТЕМИТЕ (ако се ползват) ===== */
+.system-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.system-card{border:1.5px solid #dbe3ee;border-radius:10px;padding:10px;background:#f8fafc;cursor:pointer;text-align:left;min-height:82px}
+.system-card.active{border-color:#111827;background:#111827;color:#fff}
+
+/* При печат сгънатото пак се вижда */
+@media print{ .folded{display:block!important} body.compact .mod-sketch{display:block!important} }
 </style>
 </head>
 <body>
@@ -268,9 +314,26 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
 </div>
 
 <div class="card no-print">
-  <h2>Стандарт</h2>
+  <h2>Система</h2>
+  <select id="sysSel"></select>
+  <div class="hint" id="sysHint"></div>
+  <div id="sysWarn"></div>
+</div>
+
+<div class="card no-print">
+  <h2>Цвят на профила</h2>
+  <div class="tabs" id="colorTabs">
+    <div class="tab active" data-col2="white">Бяло</div>
+    <div class="tab" data-col2="colored">Цветно фолирано</div>
+  </div>
+  <div class="hint" id="colorHint"></div>
+</div>
+
+<div class="card no-print" id="glazingCard2">
+  <h2>Остъкляване</h2>
   <select id="standard"></select>
   <div class="hint" id="stdHint"></div>
+  <div id="glassWarn" style="display:none"></div>
 </div>
 
 <div class="card no-print">
@@ -279,6 +342,11 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
   <div class="tabs" id="shapeTabs">
     <div class="tab active" data-shape="rect">Правоъгълник</div>
     <div class="tab" data-shape="trap">Трапец / наклон</div>
+  </div>
+  <div class="row">
+    <div><label>Помещение / зона</label><input type="text" id="elRoom" placeholder="напр. Веранда" list="roomList">
+      <datalist id="roomList"></datalist></div>
+    <div><label>Позиция</label><input type="text" id="elName" placeholder="напр. П1 — изток"></div>
   </div>
   <div class="row3">
     <div><label>Ширина мм</label><input type="number" id="w" value="1200"></div>
@@ -328,6 +396,7 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
   </div>
 
   <div class="preview-box" id="livePreview"></div>
+  <div id="livePrice" class="live-price"></div>
   <button class="btn" id="addBtn">+ Добави в офертата</button>
   <div id="addWarn"></div>
 </div>
@@ -337,8 +406,8 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
   <div class="lbl">Цялата оферта · материал + 75% + ДДС</div>
 </div>
 
-<div class="card">
-  <h2>Елементи</h2>
+<div class="card" id="resultsCard">
+  <h2>Елементи <button class="fold-btn no-print" id="compactBtn">компактно</button></h2>
   <div id="modList"><div class="empty">Още няма добавени елементи.</div></div>
 </div>
 
@@ -349,13 +418,13 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
 </div>
 
 <div class="card" id="cutCard">
-  <h2>Общ разкрой</h2>
+  <h2>Общ разкрой <button class="fold-btn no-print" id="cutFold">покажи</button></h2>
   <div id="cut"><div class="empty">—</div></div>
   <div class="hint">PVC профил 6.5м · стъклодържател 6м · армировка 6м. Всички елементи се пакетират заедно.</div>
 </div>
 
 <div class="card" id="glassCard">
-  <h2>Списък стъкла за поръчка</h2>
+  <h2>Списък стъкла за поръчка <button class="fold-btn no-print" id="glassFold">покажи</button></h2>
   <div id="glassList"><div class="empty">—</div></div>
 </div>
 
@@ -393,37 +462,129 @@ const P = {
   },
 };
 /* Обков — ⚠️ ПОТВЪРДЕНА е само стандартната ставка; останалите са временни */
+/* Обковът е ALL-IN (потвърдено от Кирил: „всичко е включено") — вече съдържа труд и печалба.
+   Затова НЕ влиза в материалната база, върху която се начислява 75%-ната надценка,
+   а се добавя СЛЕД нея. В противен случай трудът се начислява два пъти. */
 const HW = {
-  turn: { name:"обков отваряемо",  price:23.00, confirmed:true  },
-  tilt: { name:"обков падащо",     price:23.00, confirmed:false },
-  tt:   { name:"обков кемферно",   price:23.00, confirmed:false },
-  door: { name:"обков врата",      price:23.00, confirmed:false },
+  turn: { name:"обков отваряемо (all-in)", price:23.00, confirmed:true  },
+  tilt: { name:"обков падащо (all-in)",    price:23.00, confirmed:false },
+  tt:   { name:"обков кемферно (all-in)",  price:23.00, confirmed:false },
+  door: { name:"обков врата (all-in)",     price:23.00, confirmed:false },
 };
 const GLASS = {
-  "24solar":  {name:"24мм КлимаГард Солар", price:25.42, bead:24},
-  "24premium":{name:"24мм КГ Премиум2",     price:24.83, bead:24},
-  "triplex":  {name:"Триплекс ламиниран",   price:47.13, bead:24},
-  "32":       {name:"Троен 32мм",           price:39.00, bead:32},
-  "42":       {name:"Троен 42мм",           price:41.00, bead:40},
+  "24solar":  {name:"24мм КлимаГард Солар", price:25.42, bead:24, mm:24},
+  "24premium":{name:"24мм КГ Премиум2",     price:24.83, bead:24, mm:24},
+  "triplex":  {name:"Триплекс ламиниран",   price:47.13, bead:24, mm:24},
+  "32":       {name:"Троен 32мм",           price:39.00, bead:32, mm:32},
+  "42":       {name:"Троен 42мм",           price:41.00, bead:40, mm:42},
 };
-const STANDARDS = {
-  "s1":{name:"Бяло · 24мм Солар · армировка 1.2мм",       color:"white",   glass:"24solar",   reinf:"thick"},
-  "s2":{name:"Бяло · 24мм КГ Премиум2 · армировка 1.2мм", color:"white",   glass:"24premium", reinf:"thick"},
-  "s3":{name:"Бяло · троен 32мм · армировка 1.2мм",       color:"white",   glass:"32",        reinf:"thick"},
-  "s4":{name:"Бяло · 24мм · армировка 0.8мм",             color:"white",   glass:"24solar",   reinf:"thin"},
-  "s5":{name:"Бяло · Триплекс · армировка 1.2мм",         color:"white",   glass:"triplex",   reinf:"thick"},
-  "s6":{name:"Цветно · 24мм Солар · армировка 1.2мм",     color:"colored", glass:"24solar",   reinf:"thick"},
-  "s7":{name:"Цветно · троен 32мм · армировка 1.2мм",     color:"colored", glass:"32",        reinf:"thick"},
-  "s8":{name:"Цветно · троен 42мм · армировка 1.2мм",     color:"colored", glass:"42",        reinf:"thick"},
+/* ===================== СИСТЕМИ =====================
+   Всяка система носи СВОИТЕ цени И СВОЯТА геометрия.
+   Приспаданията (92/100мм) са изведени от реални ръчни сметки за WP5000 —
+   те НЕ важат автоматично за друга система с друга профилна ширина. */
+const SYSTEMS = {
+  /* ─── PVC ─────────────────────────────────────────────── */
+  wp3000: {
+    name:"PVC Essential WP3000 · 3-камерна · каса 60мм", kind:"pvc", confirmed:false,
+    note:"⚠️ НЯМА ценоразпис и НЯМА сверени формули за WP3000. Официално: 3-камерна, каса 60мм, крило 60мм, стъклопакет до 32мм, Uw 1.0, 39 dB. Приспаданията долу са взаимствани от WP4000 (същата 60мм каса) — по-близко от WP5000, но НЕ потвърдено.",
+    maxGlass:32, bar:{profile:6500,bead:6000,metal:6000},
+    ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
+          frameSide:38, mulSide:11.5, weld:6, glassFixSide:50, glassMulSide:23.5, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+    price:{ frame:{white:2.47,colored:4.37}, sashWin:{white:3.14,colored:5.05},
+            mullion:{white:3.13,colored:4.82}, sashDoor:{white:4.86,colored:6.77},
+            bead:{24:{white:0.67,colored:1.52},32:{white:0.59,colored:1.31},40:{white:0.52,colored:1.19}} },
+    reinf:{ "0.8":{price:0.833,confirmed:false,note:"взаимствана"},"1.2":{price:2.083,confirmed:false,note:"взаимствана"},
+            "1.5":{price:2.50,confirmed:false,note:"взаимствана"},"2.0":{price:2.50,confirmed:false,note:"взаимствана"} },
+  },
+
+  wp4000: {
+    name:"PVC Smart WP4000 · 4-камерна · каса 60мм", kind:"pvc", confirmed:false,
+    note:"✅ ФОРМУЛИТЕ са от официалния технически каталог на Weiss (светъл отвор = каса−86, крило = каса−70, делител = каса−86, стъкло = крило−124). ⚠️ ЦЕНИТЕ обаче са взаимствани от WP5000 — нямаме ценоразпис за WP4000.",
+    maxGlass:32, bar:{profile:6500,bead:6000,metal:6000},
+    ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
+          frameSide:38, mulSide:11.5, weld:6, glassFixSide:50, glassMulSide:23.5, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+    price:{ frame:{white:2.47,colored:4.37}, sashWin:{white:3.14,colored:5.05},
+            mullion:{white:3.13,colored:4.82}, sashDoor:{white:4.86,colored:6.77},
+            bead:{24:{white:0.67,colored:1.52},32:{white:0.59,colored:1.31},40:{white:0.52,colored:1.19}} },
+    reinf:{ "0.8":{price:0.833,confirmed:false,note:"взаимствана от WP5000"},"1.2":{price:2.083,confirmed:false,note:"взаимствана"},
+            "1.5":{price:2.50,confirmed:false,note:"взаимствана"},"2.0":{price:2.50,confirmed:false,note:"взаимствана"} },
+  },
+
+  wp5000: {
+    name:"PVC Energy WP5000 · 5-камерна · каса 72мм", kind:"pvc", confirmed:true,
+    note:"Официален ценоразпис Weiss + геометрия, сверена с ръчните сметки на производството.",
+    maxGlass:40, bar:{profile:6500,bead:6000,metal:6000},
+    ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
+          frameSide:38, mulSide:11.5, weld:6, glassFixSide:50, glassMulSide:23.5, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+    price:{ frame:{white:2.47,colored:4.37}, sashWin:{white:3.14,colored:5.05},
+            mullion:{white:3.13,colored:4.82}, sashDoor:{white:4.86,colored:6.77},
+            bead:{24:{white:0.67,colored:1.52},32:{white:0.59,colored:1.31},40:{white:0.52,colored:1.19}} },
+    reinf:{ "0.8":{price:0.833,confirmed:true,note:"нето (1.00 с ДДС)"},"1.2":{price:2.083,confirmed:true,note:"нето (2.50 с ДДС, П-образен)"},
+            "1.5":{price:2.50,confirmed:true,note:"нето (3.00 с ДДС)"},"2.0":{price:2.50,confirmed:false,note:"НЯМА цена — ползва се тази за 1.5мм"} },
+  },
+
+  wp82: {
+    name:"PVC Avangard WP82 · 7-камерна · каса 82мм", kind:"pvc", confirmed:false,
+    note:"⚠️ НЯМА ценоразпис и НЯМА сверени формули. Официално: 7-камерна, каса 82мм, крило 82/92мм, стъклопакет до 44мм. Приспаданията долу са взаимствани от WP5000 и почти сигурно са грешни за 82мм каса.",
+    maxGlass:44, bar:{profile:6500,bead:6000,metal:6000},
+    ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
+          frameSide:38, mulSide:11.5, weld:6, glassFixSide:50, glassMulSide:23.5, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+    price:{ frame:{white:2.47,colored:4.37}, sashWin:{white:3.14,colored:5.05},
+            mullion:{white:3.13,colored:4.82}, sashDoor:{white:4.86,colored:6.77},
+            bead:{24:{white:0.67,colored:1.52},32:{white:0.59,colored:1.31},40:{white:0.52,colored:1.19}} },
+    reinf:{ "0.8":{price:0.833,confirmed:false,note:"взаимствана"},"1.2":{price:2.083,confirmed:false,note:"взаимствана"},
+            "1.5":{price:2.50,confirmed:false,note:"взаимствана"},"2.0":{price:2.50,confirmed:false,note:"взаимствана"} },
+  },
+
+  /* ─── АЛУМИНИЙ ─────────────────────────────────────────── */
+  alu_cold: {
+    name:"Алуминий СТУДЕН · Lightech WP40 · каса 37/40мм", kind:"alu", confirmed:false,
+    note:"⚠️ СТУДЕН алуминий (непрекъснат термомост). Приема САМО 20мм стъклопакет или единично 4мм стъкло — НЕ побира 24мм пакетите от ГЛАСКО. Знаем цената на кг (натурален 6.15 / RAL 9016 6.30 / цветен фолиран 7.80 €/кг), но НЕ знаем теглото кг/м. Цените долу са оценка.",
+    maxGlass:20, bar:{profile:6000,bead:6000,metal:6000},
+    ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
+          frameSide:38, mulSide:11.5, weld:6, glassFixSide:50, glassMulSide:23.5, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+    price:{ frame:{white:4.41,colored:5.46}, sashWin:{white:4.79,colored:5.93},
+            mullion:{white:5.29,colored:6.55}, sashDoor:{white:6.30,colored:7.80},
+            bead:{20:{white:1.20,colored:1.50},24:{white:1.20,colored:1.50},32:{white:1.20,colored:1.50},40:{white:1.20,colored:1.50}} },
+    reinf:{ "0.8":{price:0,confirmed:true,note:"не се влага при алуминий"},"1.2":{price:0,confirmed:true,note:"не се влага"},
+            "1.5":{price:0,confirmed:true,note:"не се влага"},"2.0":{price:0,confirmed:true,note:"не се влага"} },
+  },
+
+  alu_thermo: {
+    name:"Алуминий ТОПЪЛ · Thermo Smart WP78 · каса 70 / крило 78мм", kind:"alu", confirmed:false,
+    note:"⚠️ Това е системата, с която работи TechPlast (потвърдено). Прекъснат термомост, полиамид Technoform 34мм, стъклопакет 24–50мм, Uw 1.0, класове 4/A9/5C, обков за евроканал. Знаем цената на кг (с прекъснат термомост 8.05 €/кг), но НЕ знаем теглото кг/м — трябва техническият каталог. Цените долу са ОЦЕНКА.",
+    maxGlass:50, bar:{profile:6000,bead:6000,metal:6000},
+    ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
+          frameSide:38, mulSide:11.5, weld:6, glassFixSide:50, glassMulSide:23.5, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+    price:{ frame:{white:5.64,colored:6.28}, sashWin:{white:6.12,colored:6.82},
+            mullion:{white:6.76,colored:7.53}, sashDoor:{white:8.05,colored:8.97},
+            bead:{24:{white:1.30,colored:1.60},32:{white:1.30,colored:1.60},40:{white:1.30,colored:1.60},50:{white:1.30,colored:1.60}} },
+    reinf:{ "0.8":{price:0,confirmed:true,note:"не се влага при алуминий"},"1.2":{price:0,confirmed:true,note:"не се влага"},
+            "1.5":{price:0,confirmed:true,note:"не се влага"},"2.0":{price:0,confirmed:true,note:"не се влага"} },
+  },
 };
 
-const BAR = { pvc:6500, bead:6000, metal:6000 };
-const KERF = 8;         // загуба при рязане от диска
+/* Остъкляването вече НЕ носи цвят — цветът е отделен избор на профила */
+const STANDARDS = {
+  "s1":{name:"24мм КлимаГард Солар",  glass:"24solar"},
+  "s2":{name:"24мм КГ Премиум2",      glass:"24premium"},
+  "s3":{name:"Троен 32мм",            glass:"32"},
+  "s5":{name:"Триплекс ламиниран",    glass:"triplex"},
+  "s8":{name:"Троен 42мм",            glass:"42"},
+};
+
+/* Цвят на профила — реални цени по компонент от официалния ценоразпис */
+const COLORS = {
+  white:   { name:"Бяло",                  key:"white",   note:"стандартен бял профил" },
+  colored: { name:"Цветно (двустр. фолир.)", key:"colored", note:"двустранно фолиран профил" },
+};
+
+/* Активната система — сменя се от интерфейса */
+let SYS = "wp5000";
+function S(){ return SYSTEMS[SYS]; }
+
+const KERF = 8;
 const MIN_OFFCUT = 300;
-const FRAME_D = 72;     // монтажна ширина каса (за делителите)
-const SASH_SUB = 92;    // приспадане (2×46 видима каса/делител)
-const SASH_ADD = 22;    // 16 застъпване + 6 опилка при топене
-const DED = { glass:100, bead:92, reinf:100 };
 const VAT = 1.20;
 let MARKUP_PCT = 75;   // редактируем: печалба + транспорт + монтаж
 function MK(){ return 1 + MARKUP_PCT/100; }
@@ -439,22 +600,53 @@ const CT = {
 };
 const CYCLE = ["fix","turn","tt","tilt","door"];
 
-let ui = { std:"s1", cols:1, rows:1, thr:false, cells:[["fix"]], shape:"rect", colW:[], rowH:[], reinf:"1.2" };
+let ui = { std:"s1", cols:1, rows:1, thr:false, cells:[["fix"]], shape:"rect", colW:[], rowH:[], reinf:"1.2", color:"white", hinge:[] };
 const DOOR_W = 900, DOOR_H = 2100;  // типични размери за врата — начално предложение
 let modules = [];
 
 const stdSel=document.getElementById("standard");
 stdSel.innerHTML=Object.entries(STANDARDS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
-stdSel.addEventListener("change",()=>{ui.std=stdSel.value;showHint();});
+stdSel.addEventListener("change",()=>{ui.std=stdSel.value;showHint();showGlassWarn();render();livePreview();});
+/* Съвместимост стъкло ↔ система */
+function glassFits(){
+  const g=GLASS[ui.std?STANDARDS[ui.std].glass:"24solar"];
+  const mx=S().maxGlass;
+  return { ok:(g.mm||24)<=mx, mm:g.mm||24, max:mx, name:g.name };
+}
+function showGlassWarn(){
+  const f=glassFits(), el=document.getElementById("glassWarn");
+  if(!el) return;
+  if(f.ok){ el.style.display="none"; el.innerHTML=""; return; }
+  el.style.display="block";
+  el.className="warn";
+  el.innerHTML=`⚠️ <b>${f.name}</b> е ${f.mm}мм, а ${S().name.split("·")[0].trim()} приема максимум <b>${f.max}мм</b>. Тази комбинация физически не влиза — избери по-тънък пакет или друга система.`;
+}
+
 function showHint(){
   const s=STANDARDS[ui.std], g=GLASS[s.glass];
-  const bp=s.color==="white"?P.bead[g.bead].white:P.bead[g.bead].colored;
+  const bp=S().price.bead[g.bead][ui.color];
   document.getElementById("stdHint").textContent=
     `Стъкло ${g.price.toFixed(2)}€/м² · държач ${g.bead}мм ${bp.toFixed(2)}€/лм`;
 }
-showHint();
+
+const sysSel=document.getElementById("sysSel");
+sysSel.innerHTML=Object.entries(SYSTEMS).map(([k,v])=>
+  `<option value="${k}">${v.confirmed?"":"⚠️ "}${v.name}</option>`).join("");
+sysSel.addEventListener("change",()=>{ SYS=sysSel.value; showSysHint(); showHint(); showReinfHint(); showGlassWarn(); render(); livePreview(); livePrice(); });
+
+function showSysHint(){
+  const s=S();
+  document.getElementById("sysHint").textContent =
+    `Каса ${s.price.frame.white.toFixed(2)}€/лм · крило ${s.price.sashWin.white.toFixed(2)}€/лм · делител ${s.price.mullion.white.toFixed(2)}€/лм (бяло) · прът ${s.bar.profile/1000}м · макс. стъкло ${s.maxGlass}мм`;
+  const w=document.getElementById("sysWarn");
+  w.innerHTML = s.confirmed ? "" : `<div class="warn">${s.note}</div>`;
+}
+showSysHint();
+showColorHint();
+showGlassWarn();
+
 function showReinfHint(){
-  const r=P.reinf[ui.reinf];
+  const r=S().reinf[ui.reinf];
   const el=document.getElementById("reinfHint");
   el.textContent = `${ui.reinf}мм · ${r.price.toFixed(2)} €/лм — ${r.note}`;
   el.style.color = r.confirmed ? "#999" : "#a35b00";
@@ -528,15 +720,32 @@ function resizeCells(){
   for(let r=0;r<nr;r++){ const row=[]; for(let c=0;c<nc;c++){ row.push((old[r]&&old[r][c])||"fix"); } nw.push(row); }
   ui.cells=nw;
 }
+function ensureHinge(){
+  const nc=ui.cols,nr=ui.rows;
+  const h=[];
+  for(let r=0;r<nr;r++){ const row=[]; for(let cc=0;cc<nc;cc++){
+    row.push((ui.hinge[r]&&ui.hinge[r][cc]) || (cc<nc/2?"left":"right")); } h.push(row); }
+  ui.hinge=h;
+}
 function renderCells(){
+  ensureHinge();
   const el=document.getElementById("cellGrid");
   el.style.gridTemplateColumns=`repeat(${ui.cols},1fr)`;
   let h="";
   for(let r=0;r<ui.rows;r++) for(let c=0;c<ui.cols;c++){
     const t=CT[ui.cells[r][c]];
-    h+=`<div class="cell ${t.cls}" data-r="${r}" data-c="${c}"><span class="ic">${t.ic}</span>${t.label}</div>`;
+    const hg=ui.hinge[r][c];
+    const flip = t.key==="fix" ? "" :
+      `<button class="hinge-btn" data-hr="${r}" data-hc="${c}" title="Обърни пантата">${hg==="left"?"◀ панта":"панта ▶"}</button>`;
+    h+=`<div class="cell ${t.cls}" data-r="${r}" data-c="${c}"><span class="ic">${t.ic}</span>${t.label}${flip}</div>`;
   }
   el.innerHTML=h;
+  el.querySelectorAll(".hinge-btn").forEach(btn=>btn.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const r=+btn.dataset.hr, cc=+btn.dataset.hc;
+    ui.hinge[r][cc] = ui.hinge[r][cc]==="left" ? "right" : "left";
+    renderCells(); livePreview();
+  }));
   el.querySelectorAll(".cell").forEach(cell=>cell.addEventListener("click",()=>{
     const r=+cell.dataset.r, c=+cell.dataset.c;
     const i=CYCLE.indexOf(ui.cells[r][c]);
@@ -554,7 +763,7 @@ function bindTabs(id,key){
     if(key==="cols"){ ui.cols=+t.dataset.col; resizeCells(); renderCells(); autoDistribute(); renderSizes(); }
     if(key==="rows"){ ui.rows=+t.dataset.rw;  resizeCells(); renderCells(); autoDistribute(); renderSizes(); }
     if(key==="thr")  ui.thr=t.dataset.thr==="1";
-    if(key==="rf"){ ui.reinf=t.dataset.rf; showReinfHint(); }
+    if(key==="rf"){ ui.reinf=t.dataset.rf; showReinfHint(); livePrice(); }
     if(key==="shape"){
       ui.shape=t.dataset.shape;
       const isT=ui.shape==="trap";
@@ -570,14 +779,25 @@ function bindTabs(id,key){
   }));
 }
 bindTabs("reinfTabs","rf");
+document.querySelectorAll("#colorTabs .tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll("#colorTabs .tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active"); ui.color=t.dataset.col2;
+  showColorHint(); showHint(); render(); livePreview();
+}));
+function showColorHint(){
+  const p=S().price, col=ui.color;
+  document.getElementById("colorHint").textContent =
+    `${COLORS[col].name} · каса ${p.frame[col].toFixed(2)} · крило ${p.sashWin[col].toFixed(2)} · делител ${p.mullion[col].toFixed(2)} · крило врата ${p.sashDoor[col].toFixed(2)} €/лм`;
+}
 bindTabs("colTabs","cols"); bindTabs("rowTabs","rows"); bindTabs("thrTabs","thr");
 document.querySelectorAll("#clientTabs .tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll("#clientTabs .tab").forEach(x=>x.classList.remove("active"));
-  t.classList.add("active"); CLIENT=t.dataset.cl; showMkHint(); render();
+  t.classList.add("active"); CLIENT=t.dataset.cl; showMkHint(); render(); livePrice();
 }));
+document.getElementById("qty").addEventListener("input",livePrice);
 document.getElementById("markup").addEventListener("input",()=>{
   const v=parseFloat(document.getElementById("markup").value);
-  MARKUP_PCT = isNaN(v)?0:v; showMkHint(); render();
+  MARKUP_PCT = isNaN(v)?0:v; showMkHint(); render(); livePrice();
 });
 function showMkHint(){
   document.getElementById("mkHint").textContent =
@@ -607,11 +827,14 @@ function geometry(m){
 
   // Каса — по габарит, 45/45; армировка в касата
   o.frame.push(pc(m.W,"45/45"),pc(m.W,"45/45"),pc(m.H,"45/45"),pc(m.H,"45/45"));
-  o.reinf.push(pc(m.W-DED.reinf,"90/90"),pc(m.W-DED.reinf,"90/90"),
-               pc(m.H-DED.reinf,"90/90"),pc(m.H-DED.reinf,"90/90"));
+  o.reinf.push(pc(m.W-S().ded.reinf,"90/90"),pc(m.W-S().ded.reinf,"90/90"),
+               pc(m.H-S().ded.reinf,"90/90"),pc(m.H-S().ded.reinf,"90/90"));
 
-  const innerW=m.W-2*FRAME_D, innerH=m.H-2*FRAME_D;
-  if(innerW<=0||innerH<=0){ o.problems.push("Отворът е по-малък от двойната ширина на касата (144мм)."); return o; }
+  /* Делителят стои във фалца на касата — същото приспадане 92мм като при крилото.
+     БЕЗ добавка за опилка: реже се и се хваща с планки (механично), не се заварява.
+     Потвърдено от производството + браншовата практика (завинтван делител, фрезован по контура). */
+  const innerW=m.W-S().ded.mullion, innerH=m.H-S().ded.mullion;
+  if(innerW<=0||innerH<=0){ o.problems.push("Отворът е по-малък от приспадането на касата ("+S().ded.mullion+"мм)."); return o; }
 
   // Делители — 90/90
   for(let c=1;c<nc;c++) o.mullion.push(pc(innerH,"90/90"));
@@ -623,27 +846,45 @@ function geometry(m){
 
   for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
     const share=colW[c], shareH=rowH[r];
-    if(share-SASH_SUB<=0 || shareH-SASH_SUB<=0){
-      o.problems.push(`Секция ${c+1}×${r+1} е ${Math.round(share)}×${Math.round(shareH)}мм — твърде малка (нужни са поне ${SASH_SUB+1}мм).`);
+    if(share-S().ded.sashSub<=0 || shareH-S().ded.sashSub<=0){
+      o.problems.push(`Секция ${c+1}×${r+1} е ${Math.round(share)}×${Math.round(shareH)}мм — твърде малка (нужни са поне ${S().ded.sashSub+1}мм).`);
       return o;
     }
     const type=CT[m.cells[r][c]];
+    /* От коя страна стои КАСА и от коя ДЕЛИТЕЛ — приспаданията са различни.
+       Официална проверка (Weiss WP4000): 1 крило = A−70; 2 крила с делител = (A−87)/2.
+       страна към каса 38мм · страна към делител 11.5мм · опилка +6 на крило. */
+    const D=S().ded;
+    const лявоКаса = (c===0), дясноКаса = (c===nc-1);
+    const гореКаса = (r===0), долуКаса = (r===nr-1);
+    const сбор=(кас,мул,a,b)=>(a?кас:мул)+(b?кас:мул);
+
     if(type.key==="fix"){
-      // Фикс: стъкло и държач се вземат от секцията
-      o.glass.push({w:share-DED.glass,h:shareH-DED.glass,n:1});
-      const bw=share-DED.bead, bh=shareH-DED.bead;
+      const gw=share  - сбор(D.glassFixSide, D.glassMulSide, лявоКаса, дясноКаса);
+      const gh=shareH - сбор(D.glassFixSide, D.glassMulSide, гореКаса, долуКаса);
+      o.glass.push({w:gw,h:gh,n:1});
+      const bw=share  - сбор(D.beadSide, D.beadMulSide, лявоКаса, дясноКаса);
+      const bh=shareH - сбор(D.beadSide, D.beadMulSide, гореКаса, долуКаса);
       o.bead.push(pc(bw,"45/45"),pc(bw,"45/45"),pc(bh,"45/45"),pc(bh,"45/45"));
     } else {
-      const sw=share-SASH_SUB+SASH_ADD, sh=shareH-SASH_SUB+SASH_ADD;
+      const sw=share  - сбор(D.frameSide, D.mulSide, лявоКаса, дясноКаса) + D.weld;
+      const sh=shareH - сбор(D.frameSide, D.mulSide, гореКаса, долуКаса) + D.weld;
       const bucket=type.door?"sashDoor":"sashWin";
       const isBottom = r===nr-1;
       const botAngle = (m.threshold && isBottom) ? "45/90" : "45/45";
       o[bucket].push(pc(sw,"45/45"),pc(sw,botAngle),pc(sh,"45/45"),pc(sh,"45/45"));
-      o.reinf.push(pc(sw-DED.reinf,"90/90"),pc(sw-DED.reinf,"90/90"),
-                   pc(sh-DED.reinf,"90/90"),pc(sh-DED.reinf,"90/90"));
-      o.bead.push(pc(sw-DED.bead,"45/45"),pc(sw-DED.bead,"45/45"),
-                  pc(sh-DED.bead,"45/45"),pc(sh-DED.bead,"45/45"));
-      o.glass.push({w:sw-DED.glass,h:sh-DED.glass,n:1});
+      o.reinf.push(pc(sw-S().ded.reinf,"90/90"),pc(sw-S().ded.reinf,"90/90"),
+                   pc(sh-S().ded.reinf,"90/90"),pc(sh-S().ded.reinf,"90/90"));
+      o.bead.push(pc(sw-S().ded.bead,"45/45"),pc(sw-S().ded.bead,"45/45"),
+                  pc(sh-S().ded.bead,"45/45"),pc(sh-S().ded.bead,"45/45"));
+      /* Стъкло в отваряемо крило: от габарита на секцията се приспадат 193мм
+         (потвърдено от производството; официалната формула на Weiss дава 194). */
+      /* Стъклото стои В КРИЛОТО → мери се от размера на крилото.
+         При 1 крило това дава габарит − 193, както потвърди производството. */
+      /* 193мм дава ОТВОРА; поръчаното стъкло е с 10мм хлабина (по 5 на страна). */
+      const вКрило = (D.glassSash||193) - (2*D.frameSide - D.weld);
+      const хлаб = D.glassGap||10;
+      o.glass.push({w:sw-вКрило-хлаб, h:sh-вКрило-хлаб, n:1});
       if(type.hw) o.hw[type.hw]=(o.hw[type.hw]||0)+1;
     }
   }
@@ -671,28 +912,28 @@ function geometryTrap(m){
 
   // Армировка — същите елементи, минус 100
   [[W,"90/90"],[H1,"90/90"],[H2,"90/90"],[t.slant,"90/90"]].forEach(([L,A])=>
-    o.reinf.push(pc(Math.max(0,L-DED.reinf),A)));
+    o.reinf.push(pc(Math.max(0,L-S().ded.reinf),A)));
 
   const type=CT[m.cells[0][0]];
   if(type.key==="fix"){
-    const gW=W-DED.glass, gH1=H1-DED.glass, gH2=H2-DED.glass;
+    const gW=W-S().ded.glass, gH1=H1-S().ded.glass, gH2=H2-S().ded.glass;
     o.glass.push({w:gW,h:(gH1+gH2)/2,n:1,trap:true,h1:gH1,h2:gH2});
-    const bt=trapGeo(W-DED.bead,H1-DED.bead,H2-DED.bead);
-    o.bead.push(pc(W-DED.bead,"45/45"),pc(H1-DED.bead,"45/"+fmtA(bt.hiCut)),
-                pc(H2-DED.bead,"45/"+fmtA(bt.loCut)),pc(bt.slant,fmtA(bt.hiCut)+"/"+fmtA(bt.loCut)));
+    const bt=trapGeo(W-S().ded.bead,H1-S().ded.bead,H2-S().ded.bead);
+    o.bead.push(pc(W-S().ded.bead,"45/45"),pc(H1-S().ded.bead,"45/"+fmtA(bt.hiCut)),
+                pc(H2-S().ded.bead,"45/"+fmtA(bt.loCut)),pc(bt.slant,fmtA(bt.hiCut)+"/"+fmtA(bt.loCut)));
   } else {
-    const sW=W-SASH_SUB+SASH_ADD, sH1=H1-SASH_SUB+SASH_ADD, sH2=H2-SASH_SUB+SASH_ADD;
+    const sW=W-S().ded.sashSub+S().ded.sashAdd, sH1=H1-S().ded.sashSub+S().ded.sashAdd, sH2=H2-S().ded.sashSub+S().ded.sashAdd;
     const st=trapGeo(sW,sH1,sH2);
     const sA=fmtA(st.hiCut), sB=fmtA(st.loCut);
     const bucket=type.door?"sashDoor":"sashWin";
     const botA=m.threshold?"45/90":"45/45";
     o[bucket].push(pc(sW,botA), pc(sH1,"45/"+(hiLeft?sA:sB)), pc(sH2,"45/"+(hiLeft?sB:sA)), pc(st.slant,sA+"/"+sB));
-    [[sW],[sH1],[sH2],[st.slant]].forEach(([L])=>o.reinf.push(pc(Math.max(0,L-DED.reinf),"90/90")));
-    const bt2=trapGeo(sW-DED.bead,sH1-DED.bead,sH2-DED.bead);
-    o.bead.push(pc(sW-DED.bead,"45/45"),pc(sH1-DED.bead,"45/"+fmtA(bt2.hiCut)),
-                pc(sH2-DED.bead,"45/"+fmtA(bt2.loCut)),pc(bt2.slant,fmtA(bt2.hiCut)+"/"+fmtA(bt2.loCut)));
-    const g1=sH1-DED.glass, g2=sH2-DED.glass;
-    o.glass.push({w:sW-DED.glass,h:(g1+g2)/2,n:1,trap:true,h1:g1,h2:g2});
+    [[sW],[sH1],[sH2],[st.slant]].forEach(([L])=>o.reinf.push(pc(Math.max(0,L-S().ded.reinf),"90/90")));
+    const bt2=trapGeo(sW-S().ded.bead,sH1-S().ded.bead,sH2-S().ded.bead);
+    o.bead.push(pc(sW-S().ded.bead,"45/45"),pc(sH1-S().ded.bead,"45/"+fmtA(bt2.hiCut)),
+                pc(sH2-S().ded.bead,"45/"+fmtA(bt2.loCut)),pc(bt2.slant,fmtA(bt2.hiCut)+"/"+fmtA(bt2.loCut)));
+    const g1=sH1-S().ded.glass, g2=sH2-S().ded.glass;
+    o.glass.push({w:sW-S().ded.glass,h:(g1+g2)/2,n:1,trap:true,h1:g1,h2:g2});
     if(type.hw) o.hw[type.hw]=(o.hw[type.hw]||0)+1;
   }
   o.glass.forEach(g=>{ if(g.w<=0||g.h1<=0||g.h2<=0)
@@ -701,7 +942,7 @@ function geometryTrap(m){
 }
 
 /* ===== СКИЦА ===== */
-function sketchSVG(m){
+function sketchSVG(m, live){
   if(m.shape==="trap") return sketchTrap(m);
   const PAD_L=34,PAD_B=26,PAD_T=8,PAD_R=8,maxW=250,maxH=200;
   const ar=m.W/m.H; let dw,dh;
@@ -736,7 +977,7 @@ function sketchSVG(m){
       s+=`<rect x="${x}" y="${y}" width="${cw}" height="${ch}" stroke-width="1.1"/>`;
       s+=`<rect x="${x+t2}" y="${y+t2}" width="${cw-2*t2}" height="${ch-2*t2}" stroke-width="0.6"/>`;
       const L=x+t2,R=x+cw-t2,T=y+t2,B=y+ch-t2;
-      const hingeLeft = c < nc/2;
+      const hingeLeft = (m.hinge && m.hinge[r] && m.hinge[r][c]) ? m.hinge[r][c]==="left" : (c < nc/2);
       // Отваряемо / врата: връх към пантата
       if(type==="turn"||type==="tt"||type==="door"){
         const ax=hingeLeft?L:R, bx=hingeLeft?R:L;
@@ -752,6 +993,23 @@ function sketchSVG(m){
     }
   }
   s+=`</g>`;
+
+  /* Интерактивен слой — само в живата скица.
+     Ляв клик = смяна на типа; клик по малкото кръгче = обръщане на пантата. */
+  if(live){
+    s+=`<g class="hit">`;
+    for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
+      const x=xAt(c), y=yAt(r), cw=wPx[c], ch=hPx[r];
+      const t=m.cells[r][c];
+      s+=`<rect class="hit-cell" data-hr="${r}" data-hc="${c}" x="${x}" y="${y}" width="${cw}" height="${ch}" fill="transparent"><title>${CT[t].label} — кликни за смяна</title></rect>`;
+      if(t!=="fix"){
+        const hg=(m.hinge&&m.hinge[r]&&m.hinge[r][c])||"left";
+        const hx = hg==="left" ? x+9 : x+cw-9;
+        s+=`<circle class="hit-hinge" data-fr="${r}" data-fc="${c}" cx="${hx}" cy="${y+ch/2}" r="7"><title>Панта ${hg==="left"?"ляво":"дясно"} — кликни за обръщане</title></circle>`;
+      }
+    }
+    s+=`</g>`;
+  }
   const dim="#9a9a9a",by=Y+H+14,lx=X-16;
   s+=`<g stroke="${dim}" stroke-width="0.7">`;
   s+=`<line x1="${X}" y1="${Y+H+3}" x2="${X}" y2="${by+4}"/><line x1="${X+W}" y1="${Y+H+3}" x2="${X+W}" y2="${by+4}"/>`;
@@ -816,14 +1074,69 @@ function currentModel(){
            H2:parseFloat(document.getElementById("h2").value)||0,
            shape:ui.shape,
            cols:ui.cols, rows:ui.rows, cells:ui.cells.map(r=>[...r]),
-           colW:[...ui.colW], rowH:[...ui.rowH], reinf:ui.reinf,
+           colW:[...ui.colW], rowH:[...ui.rowH], reinf:ui.reinf, color:ui.color, hinge:ui.hinge.map(r=>[...r]),
+           sys:SYS,
+           room:(document.getElementById("elRoom").value||"").trim(),
+           name:(document.getElementById("elName").value||"").trim(),
            threshold:ui.thr, std:ui.std, qty:1 };
 }
+/* Жива цена — смята текущия елемент, без да го добавя в офертата */
+function livePrice(){
+  const el=document.getElementById("livePrice");
+  if(!el) return;
+  const m=currentModel();
+  m.qty=parseInt(document.getElementById("qty").value)||1;
+  if(m.W<=0||m.H<=0){ el.className="live-price"; return; }
+  const geo=geometry(m);
+  if(geo.problems.length){
+    el.className="live-price on lp-bad";
+    el.innerHTML=`<div class="lp-top"><span class="lp-lbl" style="color:#fecaca">Невъзможна конфигурация</span></div><div class="lp-rows">${geo.problems[0]}</div>`;
+    return;
+  }
+  const s=STANDARDS[m.std], g=GLASS[s.glass];
+  const sum=a=>a.reduce((x,y)=>x+y.L,0)/1000;
+  const fL=sum(geo.frame),swL=sum(geo.sashWin),sdL=sum(geo.sashDoor),
+        muL=sum(geo.mullion),bL=sum(geo.bead),rL=sum(geo.reinf);
+  let mat=fL*S().price.frame[m.color||"white"]+swL*S().price.sashWin[m.color||"white"]
+        +sdL*S().price.sashDoor[m.color||"white"]+muL*S().price.mullion[m.color||"white"]
+        +bL*S().price.bead[g.bead][m.color||"white"]+rL*S().reinf[m.reinf||"1.2"].price;
+  let area=0; geo.glass.forEach(x=>area+=x.w*x.h/1e6*x.n);
+  mat+=area*g.price;
+  let hw=0; Object.entries(geo.hw||{}).forEach(([k,n])=>hw+=n*HW[k].price);
+  /* обковът е all-in → добавя се СЛЕД надценката */
+  const net=mat*MK()+hw, gross=net*VAT;
+  const lead=CLIENT==="person"?gross:net, other=CLIENT==="person"?net:gross;
+  el.className="live-price on";
+  el.innerHTML=`<div class="lp-top">
+      <span class="lp-num">€${(lead*m.qty).toFixed(2)}</span>
+      <span class="lp-lbl">${CLIENT==="person"?"с ДДС":"без ДДС"}${m.qty>1?` · ${m.qty} бр.`:""}</span></div>
+    <div class="lp-rows">Материал <b>€${mat.toFixed(2)}</b> · надценка ${MARKUP_PCT}%${hw>0?` · обков <b>€${hw.toFixed(2)}</b> (all-in)`:""} · ${CLIENT==="person"?"без ДДС":"с ДДС"} <b>€${(other*m.qty).toFixed(2)}</b>${m.qty>1?`<br>За 1 бр.: <b>€${lead.toFixed(2)}</b>`:""}<br>Профил <b>${(fL+swL+sdL+muL).toFixed(2)} лм</b> · стъкло <b>${area.toFixed(2)} м²</b> · армировка <b>${rL.toFixed(2)} лм</b></div>`;
+}
+
 function livePreview(){
   const m=currentModel(), el=document.getElementById("livePreview");
-  if(m.W<=0||m.H<=0){ el.innerHTML='<div style="color:#bbb;font-size:12px">Въведи размери</div>'; return; }
-  el.innerHTML=sketchSVG(m);
+  if(m.W<=0||m.H<=0){ el.innerHTML='<div style="color:#bbb;font-size:12px">Въведи размери</div>'; livePrice(); return; }
+  el.innerHTML = sketchSVG(m,true) +
+    '<div class="sketch-tip">Кликни секция в чертежа, за да смениш типа ѝ · кликни жълтото кръгче, за да обърнеш пантата</div>';
+
+  el.querySelectorAll(".hit-cell").forEach(h=>h.addEventListener("click",()=>{
+    const r=+h.dataset.hr, cc=+h.dataset.hc;
+    const i=CYCLE.indexOf(ui.cells[r][cc]);
+    const беше=ui.cells[r][cc];
+    ui.cells[r][cc]=CYCLE[(i+1)%CYCLE.length];
+    if(беше==="door"||ui.cells[r][cc]==="door"){ autoDistribute(); renderSizes(); }
+    renderCells(); livePreview();
+  }));
+  el.querySelectorAll(".hit-hinge").forEach(h=>h.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const r=+h.dataset.fr, cc=+h.dataset.fc;
+    ensureHinge();
+    ui.hinge[r][cc] = ui.hinge[r][cc]==="left" ? "right" : "left";
+    renderCells(); livePreview();
+  }));
+  livePrice();
 }
+
 document.getElementById("w").addEventListener("input",()=>{ autoDistribute(); renderSizes(); livePreview(); });
 document.getElementById("h").addEventListener("input",()=>{ autoDistribute(); renderSizes(); livePreview(); });
 
@@ -832,6 +1145,7 @@ document.getElementById("addBtn").addEventListener("click",()=>{
   m.qty=parseInt(document.getElementById("qty").value)||1;
   const wEl=document.getElementById("addWarn");
   if(m.W<=0||m.H<=0){ wEl.innerHTML='<div class="warn">Въведи валидни размери.</div>'; return; }
+  if(!glassFits().ok){ wEl.innerHTML='<div class="warn">⚠️ Стъклопакетът е по-дебел от максимума на избраната система — виж бележката при остъкляването.</div>'; return; }
   if(!checkSizes()){ wEl.innerHTML='<div class="warn">⚠️ Сборът на секциите не съвпада с общия габарит — поправи размерите или натисни „Изравни автоматично“.</div>'; return; }
   const g=geometry(m);
   if(g.problems.length){ wEl.innerHTML='<div class="warn">⚠️ '+g.problems.join("<br>")+'</div>'; return; }
@@ -845,6 +1159,37 @@ function pack(pieces,barLen){
       if(b.remaining>=need){ b.used.push(p); b.remaining-=need; placed=true; break; } }
     if(!placed) bars.push({used:[p],remaining:barLen-p.L}); });
   return bars;
+}
+
+/* Зарежда съществуващ елемент обратно във формата (за дублиране/редакция) */
+function loadIntoForm(i){
+  const m=modules[i]; if(!m) return;
+  SYS=m.sys||SYS;
+  const ss=document.getElementById("sysSel"); if(ss){ ss.value=SYS; }
+  ui.cols=m.cols; ui.rows=m.rows;
+  ui.cells=m.cells.map(r=>[...r]);
+  ui.hinge=(m.hinge||[]).map(r=>[...r]);
+  ui.colW=[...(m.colW||[])]; ui.rowH=[...(m.rowH||[])];
+  ui.reinf=m.reinf||"1.2"; ui.color=m.color||"white"; ui.std=m.std; ui.thr=!!m.threshold;
+  document.getElementById("w").value=m.W;
+  document.getElementById("h").value=m.H;
+  document.getElementById("qty").value=m.qty;
+  document.getElementById("elRoom").value=m.room||"";
+  document.getElementById("elName").value=(m.name||"")+" (копие)";
+  const stdSel2=document.getElementById("standard"); if(stdSel2) stdSel2.value=m.std;
+  const mark=(sel,val)=>document.querySelectorAll(sel).forEach(t=>
+    t.classList.toggle("active", t.dataset.col==val||t.dataset.rw==val||t.dataset.rf==val||
+      t.dataset.col2==val||t.dataset.thr==val));
+  mark("#colTabs .tab",String(m.cols)); mark("#rowTabs .tab",String(m.rows));
+  mark("#reinfTabs .tab",m.reinf||"1.2"); mark("#colorTabs .tab",m.color||"white");
+  mark("#thrTabs .tab",m.threshold?"1":"0");
+  renderCells(); renderSizes();
+  if(typeof showSysHint==="function") showSysHint();
+  if(typeof showColorHint==="function") showColorHint();
+  showHint(); if(typeof showReinfHint==="function") showReinfHint();
+  if(typeof showGlassWarn==="function") showGlassWarn();
+  livePreview();
+  document.getElementById("builderCard")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 function render(){
@@ -872,13 +1217,13 @@ function render(){
     const fL=sum(geo.frame),swL=sum(geo.sashWin),sdL=sum(geo.sashDoor),
           muL=sum(geo.mullion),bL=sum(geo.bead),rL=sum(geo.reinf);
     lm.frame+=fL; lm.sashWin+=swL; lm.sashDoor+=sdL; lm.mullion+=muL; lm.bead+=bL; lm.reinf+=rL;
-    cost.frame+=fL*P.frame[s.color];
-    cost.sashWin+=swL*P.sashWin[s.color];
-    cost.sashDoor+=sdL*P.sashDoor[s.color];
-    cost.mullion+=muL*P.mullion[s.color];
-    cost.bead+=bL*P.bead[g.bead][s.color];
-    cost.reinf+=rL*P.reinf[m.reinf||"1.2"].price;
-    if(!P.reinf[m.reinf||"1.2"].confirmed) anyUnconfirmedReinf=true;
+    cost.frame+=fL*S().price.frame[m.color||"white"];
+    cost.sashWin+=swL*S().price.sashWin[m.color||"white"];
+    cost.sashDoor+=sdL*S().price.sashDoor[m.color||"white"];
+    cost.mullion+=muL*S().price.mullion[m.color||"white"];
+    cost.bead+=bL*S().price.bead[g.bead][m.color||"white"];
+    cost.reinf+=rL*S().reinf[m.reinf||"1.2"].price;
+    if(!S().reinf[m.reinf||"1.2"].confirmed) anyUnconfirmedReinf=true;
 
     let mg=0;
     geo.glass.forEach(gl=>{
@@ -896,14 +1241,17 @@ function render(){
     });
     cost.hw+=mh;
 
-    m._mat=(fL*P.frame[s.color]+swL*P.sashWin[s.color]+sdL*P.sashDoor[s.color]
-      +muL*P.mullion[s.color]+bL*P.bead[g.bead][s.color]+rL*P.reinf[m.reinf||"1.2"].price
-      +mg*g.price+mh)/m.qty;
+    m._hw=mh;
+    m._mat=(fL*S().price.frame[m.color||"white"]+swL*S().price.sashWin[m.color||"white"]+sdL*S().price.sashDoor[m.color||"white"]
+      +muL*S().price.mullion[m.color||"white"]+bL*S().price.bead[g.bead][m.color||"white"]+rL*S().reinf[m.reinf||"1.2"].price
+      +mg*g.price)/m.qty;
     m._geo=geo;
   });
 
-  const material=Object.values(cost).reduce((a,b)=>a+b,0);
-  const withMk=material*MK(), withVat=withMk*VAT;
+  /* Обковът е all-in → изважда се от базата за надценка и се добавя след нея */
+  const material=Object.values(cost).reduce((a,b)=>a+b,0) - cost.hw;
+  const withMk=material*MK() + cost.hw;
+  const withVat=withMk*VAT;
   const lead = CLIENT==="person" ? withVat : withMk;
   const other = CLIENT==="person" ? withMk : withVat;
   document.getElementById("grand").textContent="€"+lead.toFixed(2);
@@ -913,27 +1261,47 @@ function render(){
   if(!sub){ sub=document.createElement("div"); sub.className="sub"; document.querySelector(".total").appendChild(sub); }
   sub.textContent = (CLIENT==="person" ? "без ДДС: €" : "с ДДС: €") + other.toFixed(2);
 
-  document.getElementById("modList").innerHTML=modules.map((m,i)=>{
+  /* Групиране по помещение — важно при обект с много отвори */
+  const групи={};
+  modules.forEach((m,i)=>{ const k=(m.room||"Без помещение"); (групи[k]=групи[k]||[]).push([m,i]); });
+  document.getElementById("modList").innerHTML=Object.entries(групи).map(([стая,списък])=>{
+    const сума=списък.reduce((s,[m])=>s+(m._mat*MK()*m.qty+(m._hw||0))*(CLIENT==="person"?VAT:1),0);
+    const бр=списък.reduce((s,[m])=>s+m.qty,0);
+    const карти=списък.map(([m,i])=>{
     const s=STANDARDS[m.std];
     const flat=m.cells.flat().map(k=>CT[k].label);
     const counts={}; flat.forEach(l=>counts[l]=(counts[l]||0)+1);
     const desc=Object.entries(counts).map(([l,n])=>n>1?`${n}× ${l}`:l).join(" · ");
-    const unitNet=m._mat*MK(), unitGross=unitNet*VAT;
+    const unitNet=m._mat*MK()+(m._hw||0)/m.qty, unitGross=unitNet*VAT;
     const unit = CLIENT==="person" ? unitGross : unitNet;
-    const gl=m._geo.glass.map(x=>x.trap?`${Math.round(x.w)}×${Math.round(x.h1)}/${Math.round(x.h2)} трапец`:`${Math.round(x.w)}×${Math.round(x.h)}`).join(", ");
+    const gl=m._geo.glass.map(x=>`${Math.round(x.w)}×${Math.round(x.h)}`).join(", ");
+    const заглавие = m.name ? `${m.name} · ${m.W}×${m.H}` : `${m.W}×${m.H}`;
+    const сис = SYSTEMS[m.sys||"wp5000"];
     return `<div class="mod">
-      <div class="mod-head"><span class="mod-title">${m.shape==="trap"?m.W+"×"+m.H+"/"+m.H2:m.W+"×"+m.H} ${m.qty>1?"× "+m.qty:""}</span>
-      <button class="btn small danger no-print" data-del="${i}">Изтрий</button></div>
+      <div class="mod-head"><span class="mod-title">${заглавие}${m.qty>1?" × "+m.qty:""}</span>
+      <span style="display:flex;gap:6px">
+        <button class="btn small no-print" data-dup="${i}">Дублирай</button>
+        <button class="btn small danger no-print" data-del="${i}">Изтрий</button></span></div>
       <div class="mod-sketch">${sketchSVG(m)}</div>
-      <div class="mod-detail">${m.shape==="trap"?"трапец":m.cols+"×"+m.rows+" секции"} · ${desc}${m.threshold?" · алум. праг":""}<br>${s.name}</div>
+      <div class="mod-detail">${m.cols}×${m.rows} секции · ${desc}${m.threshold?" · алум. праг":""}<br>
+        ${m.cols>1?`Колони: ${m.colW.map(Math.round).join(" / ")}мм<br>`:""}${m.rows>1?`Редове: ${m.rowH.map(Math.round).join(" / ")}мм<br>`:""}
+        ${сис.name.split("·")[0].trim()} · ${COLORS[m.color||"white"].name} · армировка ${m.reinf||"1.2"}мм · ${s.name}</div>
       <div class="glass-list">Стъкла: ${gl}</div>
       <div class="mod-price">€${unit.toFixed(2)}/бр · общо €${(unit*m.qty).toFixed(2)}
         <span style="font-weight:400;color:#999;font-size:12px">(${CLIENT==="person"?"с ДДС":"без ДДС"})</span></div>
-    </div>`;
+    </div>`;}).join("");
+    return `<div class="room-grp"><div class="room-hd"><span>${стая}</span>
+      <span class="room-sum">${бр} бр. · €${сума.toFixed(2)}</span></div>${карти}</div>`;
   }).join("");
   document.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
     modules.splice(parseInt(b.dataset.del),1); render();
   }));
+  document.querySelectorAll("[data-dup]").forEach(b=>b.addEventListener("click",()=>
+    loadIntoForm(parseInt(b.dataset.dup))));
+  /* попълваме списъка с вече използвани помещения */
+  const dl=document.getElementById("roomList");
+  if(dl) dl.innerHTML=[...new Set(modules.map(m=>m.room).filter(Boolean))]
+    .map(r=>`<option value="${r}">`).join("");
 
   /* Двуколонна разбивка: без ДДС | с ДДС */
   const r=(n,q,net,bold,isCost)=>{
@@ -952,12 +1320,15 @@ function render(){
   if(lm.bead) b+=r("Стъклодържател",lm.bead.toFixed(2)+" лм",cost.bead,false,true);
   if(lm.reinf){ const rfSet=[...new Set(modules.map(x=>x.reinf||"1.2"))].join("/"); b+=r("Армировка "+rfSet+"мм"+(anyUnconfirmedReinf?" ⚠️":""),lm.reinf.toFixed(2)+" лм",cost.reinf,false,true); }
   b+=r("Стъкло",glassArea.toFixed(2)+" м²",cost.glass,false,true);
-  Object.entries(hwCount).forEach(([k,n])=>{ b+=r(HW[k].name+(HW[k].confirmed?"":" ⚠️"),n+" бр.",n*HW[k].price,false,true); });
   b+=r("Себестойност на производството","",material,true,true);
 
   b+=`<div class="b2-sec b2-sec-cost">Надценка — печалба, транспорт, монтаж</div>`;
   const mkAmount = material*(MARKUP_PCT/100);
   b+=r(`Надценка ${MARKUP_PCT}%`,"",mkAmount,false,true);
+  if(Object.keys(hwCount).length){
+    b+=`<div class="b2-sec">Обков (all-in — вече включва труд, не се надценява)</div>`;
+    Object.entries(hwCount).forEach(([k,n])=>{ b+=r(HW[k].name+(HW[k].confirmed?"":" ⚠️"),n+" бр.",n*HW[k].price); });
+  }
   b+=r("ПРОДАЖНА ЦЕНА","",withMk,true);
   document.getElementById("brk").innerHTML=b;
 
@@ -970,9 +1341,9 @@ function render(){
     hw.innerHTML="⚠️ За 2.0мм армировка нямаме потвърдена цена — сметната е по ставката за 1.5мм (3.00 €/лм). Реалната цена е почти сигурно по-висока при по-дебела стомана.";
   } else hw.style.display="none";
 
-  const groups=[["Каса",all.frame,BAR.pvc,"PVC 6.5м"],["Крило прозорец",all.sashWin,BAR.pvc,"PVC 6.5м"],
-    ["Крило врата",all.sashDoor,BAR.pvc,"PVC 6.5м"],["Делител",all.mullion,BAR.pvc,"PVC 6.5м"],
-    ["Стъклодържател",all.bead,BAR.bead,"6м"],["Армировка",all.reinf,BAR.metal,"метал 6м"]].filter(g=>g[1].length);
+  const groups=[["Каса",all.frame,S().bar.profile,"PVC 6.5м"],["Крило прозорец",all.sashWin,S().bar.profile,"PVC 6.5м"],
+    ["Крило врата",all.sashDoor,S().bar.profile,"PVC 6.5м"],["Делител",all.mullion,S().bar.profile,"PVC 6.5м"],
+    ["Стъклодържател",all.bead,S().bar.bead,"6м"],["Армировка",all.reinf,S().bar.metal,"метал 6м"]].filter(g=>g[1].length);
 
   document.getElementById("cut").innerHTML=groups.map(([nm,pcs,barLen,note])=>{
     const bars=pack(pcs,barLen);
@@ -1040,6 +1411,26 @@ document.getElementById("printBtn").addEventListener("click",()=>{
   document.body.classList.remove("doc-client","doc-shop");
   document.body.classList.add(DOCMODE==="client"?"doc-client":"doc-shop");
   window.print();
+});
+
+
+/* Сгъване — при обект с много отвори страницата иначе става непроходима */
+function fold(btnId, targetId, отворен){
+  const btn=document.getElementById(btnId), t=document.getElementById(targetId);
+  if(!btn||!t) return;
+  const прилож=()=>{ t.classList.toggle("folded",!отворен);
+    btn.classList.toggle("on",отворен); btn.textContent=отворен?"скрий":"покажи"; };
+  прилож();
+  btn.addEventListener("click",()=>{ отворен=!отворен; прилож(); });
+}
+fold("cutFold","cut",false);
+fold("glassFold","glassList",false);
+
+const cb=document.getElementById("compactBtn");
+if(cb) cb.addEventListener("click",()=>{
+  const on=document.body.classList.toggle("compact");
+  cb.classList.toggle("on",on);
+  cb.textContent = on ? "със скици" : "компактно";
 });
 
 livePreview(); render();
