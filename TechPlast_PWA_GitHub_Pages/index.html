@@ -7,7 +7,6 @@
 <meta name="theme-color" content="#141414">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 96'%3E%3Cpolygon points='12,16 25,8 89,8 76,16' fill='%23C9A227'/%3E%3Cpolygon points='76,16 89,8 89,72 76,80' fill='%238a6f13'/%3E%3Crect x='12' y='16' width='64' height='64' fill='%23FFD700'/%3E%3Crect x='21' y='25' width='46' height='46' fill='%231a1a1a'/%3E%3Crect x='41.8' y='25' width='4.4' height='46' fill='%23FFD700'/%3E%3Crect x='21' y='45.8' width='46' height='4.4' fill='%23FFD700'/%3E%3C/svg%3E">
 <style>
@@ -412,6 +411,13 @@ body.compact .mod-head{margin-bottom:2px}
     <div class="tab" data-thr="1">С алуминиев праг</div>
   </div>
 
+  <label>Обков за кемферно</label>
+  <div class="tabs" id="hwModeTabs">
+    <div class="tab active" data-hwm="flat">Бърза оценка (23€)</div>
+    <div class="tab" data-hwm="titan">Реален TITAN комплект по размер</div>
+  </div>
+  <div class="hint" id="hwModeHint">TITAN комплект е точен само за секции до 1400×1260мм — извън това пада обратно на 23€.</div>
+
   <div class="preview-box" id="livePreview"></div>
   <div id="livePrice" class="live-price"></div>
   <button class="btn" id="addBtn">+ Добави в офертата</button>
@@ -458,8 +464,8 @@ body.compact .mod-head{margin-bottom:2px}
   </div>
   <div class="hint" id="docHint">Офертата за клиент показва скици и цени, без вътрешния разкрой и себестойността.</div>
 </div>
-<button class="btn dark no-print" id="printBtn">🖨️ Разпечатай</button>
-<button class="btn no-print" id="pdfBtn" style="margin-top:8px">⬇️ Свали PDF файл</button>
+<button class="btn dark no-print" id="printBtn">🖨️ Разпечатай / Запази като PDF</button>
+<div class="hint no-print" style="text-align:center;margin-top:6px">В прозореца за печат избери принтер „Save as PDF" / „Запази като PDF", вместо реален принтер.</div>
 
 
 </div>
@@ -489,11 +495,35 @@ const P = {
    Затова НЕ влиза в материалната база, върху която се начислява 75%-ната надценка,
    а се добавя СЛЕД нея. В противен случай трудът се начислява два пъти. */
 const HW = {
-  turn: { name:"обков отваряемо (all-in)", price:23.00, confirmed:true  },
-  tilt: { name:"обков падащо (all-in)",    price:23.00, confirmed:false },
-  tt:   { name:"обков кемферно (all-in)",  price:23.00, confirmed:false },
-  door: { name:"обков врата (all-in)",     price:23.00, confirmed:false },
+  turn: { name:"обков отваряемо (all-in)", price:23.00, confirmed:true },
+  tilt: { name:"обков падащо (all-in)",    price:23.00, confirmed:true },
+  tt:   { name:"обков кемферно (all-in)",  price:23.00, confirmed:true },
+  door: { name:"обков врата (all-in)",     price:23.00, confirmed:true },
   slide:{ name:"плъзгаща система (комплект, all-in)", price:45.00, confirmed:false },
+};
+
+/* ===== TITAN NEW — реален каталог на комплекти кемферно (S TF Siegenia), по размер =====
+   Извлечено от истинския ценоразпис (лист „OFFER“), €/бр НЕТО. Ширина/височина по фалц (FFB/FFH).
+   Тази таблица е ДОПЪЛНИТЕЛНА опция — 23€ бързата оценка остава по подразбиране, освен ако
+   потребителят изрично избере „реален TITAN комплект по размер“. */
+const TITAN_TT = {
+  heights: [450, 450, 680, 880, 1030, 1260], // горна граница на всеки височинен диапазон (FFH mm)
+  heightLabels: ["230–450","370–450","451–680","681–880","881–1030","1031–1260"],
+  widths: [
+    { max:430,  label:"320–430",  p:[null,14.62,14.46,14.25,15.85,18.80] },
+    { max:480,  label:"431–480",  p:[14.62,12.69,12.33,12.31,13.92,16.87] },
+    { max:600,  label:"480–600",  p:[14.97,13.03,12.67,12.46,14.26,17.21] },
+    { max:800,  label:"601–800",  p:[14.91,12.98,12.62,12.41,14.21,17.16] },
+    { max:1200, label:"801–1200", p:[16.70,14.77,14.41,14.20,16.00,18.95] },
+    { max:1400, label:"1201–1400",p:[17.34,15.41,15.05,14.84,16.64,19.59] },
+  ],
+  lookup(w_mm, h_mm){
+    const wr = this.widths.find(x=>w_mm<=x.max) || this.widths[this.widths.length-1];
+    let hi = this.heights.findIndex(x=>h_mm<=x);
+    if(hi===-1) hi = this.heights.length-1;
+    const price = wr.p[hi];
+    return { price, wLabel:wr.label, hLabel:this.heightLabels[hi], inRange: w_mm<=1400 && h_mm<=1260 && price!==null };
+  }
 };
 const GLASS = {
   "24solar":  {name:"24мм КлимаГард Солар", price:25.42, bead:24, mm:24},
@@ -517,7 +547,7 @@ const SYSTEMS = {
     note:"⚠️ НЯМА ценоразпис и НЯМА сверени формули за WP3000. Официално: 3-камерна, каса 60мм, крило 60мм, стъклопакет до 32мм, Uw 1.0, 39 dB. Приспаданията долу са взаимствани от WP4000 (същата 60мм каса) — по-близко от WP5000, но НЕ потвърдено.",
     maxGlass:32, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
-          frameSide:46, mulSide:40, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+          frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
     price:{ frame:{white:2.47,extfoil:3.14,intfoil:3.52,colored:4.37}, sashWin:{white:3.14,extfoil:3.81,intfoil:4.19,colored:5.05},
             mullion:{white:3.13,extfoil:3.72,intfoil:4.06,colored:4.82}, sashDoor:{white:4.86,extfoil:5.53,intfoil:5.91,colored:6.77},
             bead:{20:{white:0.67,extfoil:0.97,intfoil:1.14,colored:1.52}, 24:{white:0.67,extfoil:0.97,intfoil:1.14,colored:1.52},32:{white:0.59,extfoil:0.84,intfoil:0.99,colored:1.31},40:{white:0.52,extfoil:0.75,intfoil:0.89,colored:1.19}} },
@@ -530,7 +560,7 @@ const SYSTEMS = {
     note:"✅ ФОРМУЛИТЕ са от официалния технически каталог на Weiss (светъл отвор = каса−86, крило = каса−70, делител = каса−86, стъкло = крило−124). ⚠️ ЦЕНИТЕ обаче са взаимствани от WP5000 — нямаме ценоразпис за WP4000.",
     maxGlass:32, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
-          frameSide:46, mulSide:40, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+          frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
     price:{ frame:{white:2.47,extfoil:3.14,intfoil:3.52,colored:4.37}, sashWin:{white:3.14,extfoil:3.81,intfoil:4.19,colored:5.05},
             mullion:{white:3.13,extfoil:3.72,intfoil:4.06,colored:4.82}, sashDoor:{white:4.86,extfoil:5.53,intfoil:5.91,colored:6.77},
             bead:{20:{white:0.67,extfoil:0.97,intfoil:1.14,colored:1.52}, 24:{white:0.67,extfoil:0.97,intfoil:1.14,colored:1.52},32:{white:0.59,extfoil:0.84,intfoil:0.99,colored:1.31},40:{white:0.52,extfoil:0.75,intfoil:0.89,colored:1.19}} },
@@ -543,7 +573,7 @@ const SYSTEMS = {
     note:"Официален ценоразпис Weiss + геометрия, сверена с ръчните сметки на производството.",
     maxGlass:40, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
-          frameSide:46, mulSide:40, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+          frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
     /* Официален ценоразпис Weiss (снимка на 3 стр., "всички цени са без ДДС") — бял/двустр/едностр-външно/едностр-вътрешно */
     price:{ frame:{white:2.47,extfoil:4.15,intfoil:4.00,colored:4.37},
             sashWin:{white:3.14,extfoil:4.71,intfoil:4.84,colored:5.05},
@@ -575,7 +605,7 @@ const SYSTEMS = {
     note:"⚠️ НЯМА ценоразпис и НЯМА сверени формули. Официално: 7-камерна, каса 82мм, крило 82/92мм, стъклопакет до 44мм. Приспаданията долу са взаимствани от WP5000 и почти сигурно са грешни за 82мм каса.",
     maxGlass:44, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
-          frameSide:46, mulSide:40, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+          frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
     price:{ frame:{white:2.47,extfoil:3.14,intfoil:3.52,colored:4.37}, sashWin:{white:3.14,extfoil:3.81,intfoil:4.19,colored:5.05},
             mullion:{white:3.13,extfoil:3.72,intfoil:4.06,colored:4.82}, sashDoor:{white:4.86,extfoil:5.53,intfoil:5.91,colored:6.77},
             bead:{20:{white:0.67,extfoil:0.97,intfoil:1.14,colored:1.52}, 24:{white:0.67,extfoil:0.97,intfoil:1.14,colored:1.52},32:{white:0.59,extfoil:0.84,intfoil:0.99,colored:1.31},40:{white:0.52,extfoil:0.75,intfoil:0.89,colored:1.19}} },
@@ -590,7 +620,7 @@ const SYSTEMS = {
     note:"⚠️ СТУДЕН алуминий (непрекъснат термомост). Приема САМО 20мм стъклопакет или единично 4мм стъкло — НЕ побира 24мм пакетите от ГЛАСКО. Знаем цената на кг (натурален 6.15 / RAL 9016 6.30 / цветен фолиран 7.80 €/кг), но НЕ знаем теглото кг/м. Цените долу са оценка.",
     maxGlass:20, bar:{profile:6000,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
-          frameSide:46, mulSide:40, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+          frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
     price:{ frame:{white:4.41,extfoil:4.78,intfoil:4.99,colored:5.46}, sashWin:{white:4.79,extfoil:5.19,intfoil:5.42,colored:5.93},
             mullion:{white:5.29,extfoil:5.73,intfoil:5.98,colored:6.55}, sashDoor:{white:6.3,extfoil:6.82,intfoil:7.12,colored:7.8},
             bead:{20:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5},24:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5},32:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5},40:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5}} },
@@ -604,7 +634,7 @@ const SYSTEMS = {
     note:"⚠️ Това е системата, с която работи TechPlast (потвърдено). Прекъснат термомост, полиамид Technoform 34мм, стъклопакет 24–50мм, Uw 1.0, класове 4/A9/5C, обков за евроканал. Знаем цената на кг (с прекъснат термомост 8.05 €/кг), но НЕ знаем теглото кг/м — трябва техническият каталог. Цените долу са ОЦЕНКА.",
     maxGlass:50, bar:{profile:6000,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
-          frameSide:46, mulSide:40, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
+          frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
     price:{ frame:{white:5.64,extfoil:5.86,intfoil:5.99,colored:6.28}, sashWin:{white:6.12,extfoil:6.37,intfoil:6.5,colored:6.82},
             mullion:{white:6.76,extfoil:7.03,intfoil:7.18,colored:7.53}, sashDoor:{white:8.05,extfoil:8.37,intfoil:8.56,colored:8.97},
             bead:{20:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6}, 24:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6},32:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6},40:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6},50:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6}} },
@@ -895,6 +925,10 @@ function showColorHint(){
     `${COLORS[col].name} · каса ${p.frame[col].toFixed(2)} · крило ${p.sashWin[col].toFixed(2)} · делител ${p.mullion[col].toFixed(2)} · крило врата ${p.sashDoor[col].toFixed(2)} €/лм`;
 }
 bindTabs("thrTabs","thr");
+document.querySelectorAll("#hwModeTabs .tab").forEach(t=>t.addEventListener("click",()=>{
+  document.querySelectorAll("#hwModeTabs .tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active"); ui.hwMode=t.dataset.hwm; livePreview();
+}));
 document.querySelectorAll("#clientTabs .tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll("#clientTabs .tab").forEach(x=>x.classList.remove("active"));
   t.classList.add("active"); CLIENT=t.dataset.cl; showMkHint(); render(); livePrice();
@@ -994,7 +1028,14 @@ function geometry(m){
       const вКрило = (D.glassSash||193) - (2*D.frameSide - D.weld);
       const хлаб = D.glassGap||10;
       o.glass.push({w:sw-вКрило-хлаб, h:sh-вКрило-хлаб, n:1});
-      if(type.hw) o.hw[type.hw]=(o.hw[type.hw]||0)+1;
+      if(type.hw){
+        o.hw[type.hw]=(o.hw[type.hw]||0)+1;
+        if(type.hw==="tt" && m.hwMode==="titan"){
+          const t = TITAN_TT.lookup(Math.round(sw), Math.round(sh));
+          o.hwDetail = o.hwDetail || [];
+          o.hwDetail.push({ price: t.inRange ? t.price : HW.tt.price, real:t.inRange, wLabel:t.wLabel, hLabel:t.hLabel });
+        }
+      }
     }
   }
   o.glass.forEach(g=>{ if(g.w<=0||g.h<=0)
@@ -1189,7 +1230,7 @@ function currentModel(){
            H2:parseFloat(document.getElementById("h2").value)||0,
            shape:ui.shape,
            cols:ui.cols, rows:ui.rows, cells:ui.cells.map(r=>[...r]),
-           colW:[...ui.colW], rowH:[...ui.rowH], reinf:ui.reinf, color:ui.color, hinge:ui.hinge.map(r=>[...r]), mullionType:ui.mullionType, sashType:ui.sashType,
+           colW:[...ui.colW], rowH:[...ui.rowH], reinf:ui.reinf, color:ui.color, hinge:ui.hinge.map(r=>[...r]), mullionType:ui.mullionType, sashType:ui.sashType, hwMode:ui.hwMode,
            sys:SYS,
            room:(document.getElementById("elRoom").value||"").trim(),
            name:(document.getElementById("elName").value||"").trim(),
@@ -1327,6 +1368,7 @@ function render(){
   }
   const cost={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0,glass:0,hw:0,corner:0};
   let cornerCount=0;
+  let titanHwLines=[];
   const lm={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0};
   let glassArea=0, panelArea=0; const glassOrders={}, panelOrders={}; const hwCount={};
   let anyUnconfirmedHW=false, anyUnconfirmedReinf=false;
@@ -1371,8 +1413,17 @@ function render(){
     let mh=0;
     Object.entries(geo.hw).forEach(([k,n])=>{
       const tot=n*m.qty; hwCount[k]=(hwCount[k]||0)+tot;
-      mh+=tot*HW[k].price;
-      if(!HW[k].confirmed) anyUnconfirmedHW=true;
+      if(k==="tt" && geo.hwDetail){
+        // Реален TITAN комплект — всяка кемферна секция носи собствена цена по размер
+        geo.hwDetail.forEach(d=>{
+          mh += d.price*m.qty;
+          titanHwLines.push({ price:d.price, real:d.real, wLabel:d.wLabel, hLabel:d.hLabel, qty:m.qty });
+          if(!d.real) anyUnconfirmedHW=true;
+        });
+      } else {
+        mh+=tot*HW[k].price;
+        if(!HW[k].confirmed) anyUnconfirmedHW=true;
+      }
     });
     cost.hw+=mh;
 
@@ -1464,7 +1515,15 @@ function render(){
   b+=r(`Надценка ${MARKUP_PCT}%`,"",mkAmount,false,true);
   if(Object.keys(hwCount).length){
     b+=`<div class="b2-sec">Обков (all-in — вече включва труд, не се надценява)</div>`;
-    Object.entries(hwCount).forEach(([k,n])=>{ b+=r(HW[k].name+(HW[k].confirmed?"":" ⚠️"),n+" бр.",n*HW[k].price); });
+    Object.entries(hwCount).forEach(([k,n])=>{
+      if(k==="tt" && titanHwLines.length){
+        titanHwLines.forEach(l=>{
+          b += r(`Обков кемферно ${l.wLabel}×${l.hLabel}мм (TITAN${l.real?"":" ⚠️ извън таблицата, ползва 23€"})`, l.qty+" бр.", l.price*l.qty);
+        });
+      } else {
+        b+=r(HW[k].name+(HW[k].confirmed?"":" ⚠️"),n+" бр.",n*HW[k].price);
+      }
+    });
   }
   b+=r("ПРОДАЖНА ЦЕНА","",withMk,true);
   document.getElementById("brk").innerHTML=b;
@@ -1593,34 +1652,7 @@ if(cb) cb.addEventListener("click",()=>{
 
 
 /* Истински PDF файл за сваляне — не системния print диалог */
-document.getElementById("pdfBtn").addEventListener("click", async ()=>{
-  if(!modules.length){ alert("Добави поне един елемент, преди да генерираш документ."); return; }
-  buildDocHeader();
-  document.body.classList.remove("doc-client","doc-shop");
-  document.body.classList.add(DOCMODE==="client"?"doc-client":"doc-shop");
 
-  const btn=document.getElementById("pdfBtn");
-  const стар=btn.textContent; btn.textContent="Генерирам…"; btn.disabled=true;
-
-  const име = (document.getElementById("cOffer").value||"TechPlast-oferta")
-    .replace(/[^\wа-яА-Я-]/g,"_") + (DOCMODE==="shop" ? "-raboten-list" : "") + ".pdf";
-
-  try{
-    await html2pdf().set({
-      margin:[10,8,10,8],
-      filename:име,
-      image:{type:"jpeg",quality:0.95},
-      html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},
-      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
-      pagebreak:{mode:["css","legacy"]}
-    }).from(document.body).save();
-  } catch(e){
-    alert("PDF грешка: "+e.message+" — при липса на интернет ползвай „Разпечатай“ вместо това.");
-  } finally {
-    btn.textContent=стар; btn.disabled=false;
-    document.body.classList.remove("doc-client","doc-shop");
-  }
-});
 
 livePreview(); render();
 
