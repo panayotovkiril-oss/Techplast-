@@ -1654,6 +1654,58 @@ if(cb) cb.addEventListener("click",()=>{
 /* Истински PDF файл за сваляне — не системния print диалог */
 
 
+/* ===== Внос от AR Измерителя — линк с ?ar=<кодирани данни> ===== */
+function importFromAR(){
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('ar');
+  if(!raw) return;
+  let items;
+  try {
+    items = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(raw)))));
+  } catch(e){ return; } // невалидни данни — тихо пропускаме, не чупим страницата
+
+  if(!Array.isArray(items) || !items.length) return;
+
+  const banner = document.createElement('div');
+  banner.className = 'card';
+  banner.style.cssText = 'border:2px solid #FFD700;background:#fffdf5';
+  banner.innerHTML = `
+    <h2 style="color:#8a5a00">📲 Внос от AR Измерителя</h2>
+    <div style="font-size:13.5px;color:#555;line-height:1.7;margin-bottom:10px">
+      ${items.map(it=>`${it.type==='door'?'🚪':'🪟'} ${it.room?it.room+' — ':''}${it.name}: <b>${it.w}×${it.h}мм</b>`).join('<br>')}
+    </div>
+    <div class="hint" style="margin-bottom:10px">Типът на отваряне (фикс/отваряемо/кемферно) не се знае от AR измерването — влиза като фикс, коригираш в скицата след внасяне.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="arImportBtn" style="margin-top:0">Внеси всички (${items.length})</button>
+      <button class="btn small danger" id="arSkipBtn" style="margin-top:0;width:auto">Пропусни</button>
+    </div>`;
+  document.querySelector('main').insertBefore(banner, document.querySelector('main').firstChild);
+
+  document.getElementById('arSkipBtn').addEventListener('click', ()=>{
+    banner.remove();
+    history.replaceState({}, '', location.pathname); // чистим ?ar= от адреса
+  });
+  document.getElementById('arImportBtn').addEventListener('click', ()=>{
+    items.forEach(it=>{
+      const isDoor = it.type === 'door';
+      modules.push({
+        W: it.w, H: it.h, H2: 0, shape: 'rect',
+        cols: 1, rows: 1, cells: [[isDoor?'door':'fix']],
+        colW: [it.w], rowH: [it.h],
+        reinf: '1.2', color: 'white', hinge: [['left']],
+        mullionType: 'std', sashType: 'std', hwMode: 'flat',
+        sys: SYS, room: it.room || '', name: it.name || '',
+        threshold: isDoor, std: ui.std, qty: 1,
+      });
+    });
+    banner.remove();
+    history.replaceState({}, '', location.pathname);
+    render();
+    document.getElementById('resultsCard')?.scrollIntoView({behavior:'smooth'});
+  });
+}
+importFromAR();
+
 livePreview(); render();
 
 /* PWA: работи само от HTTPS (или localhost), не от file://. */
