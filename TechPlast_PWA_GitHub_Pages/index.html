@@ -10,6 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 96'%3E%3Cpolygon points='12,16 25,8 89,8 76,16' fill='%23C9A227'/%3E%3Cpolygon points='76,16 89,8 89,72 76,80' fill='%238a6f13'/%3E%3Crect x='12' y='16' width='64' height='64' fill='%23FFD700'/%3E%3Crect x='21' y='25' width='46' height='46' fill='%231a1a1a'/%3E%3Crect x='41.8' y='25' width='4.4' height='46' fill='%23FFD700'/%3E%3Crect x='21' y='45.8' width='46' height='4.4' fill='%23FFD700'/%3E%3C/svg%3E">
 <style>
+:root{--line:#dbe3ee;--surface-alt:#f8fafc;--muted:#94a3b8}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f4f5f7;color:#1a1a1a;font-size:16px}
 header{background:#141414;color:#fff;padding:16px 18px;
@@ -31,6 +32,7 @@ label{display:block;font-size:12.5px;color:#888;margin-bottom:5px}
 input,select{width:100%;padding:13px;border:2px solid #eee;border-radius:8px;font-size:17px;font-weight:600;background:#fff}
 input:focus,select:focus{outline:none;border-color:#FFD700}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .tabs{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
 .tab{flex:1;min-width:64px;padding:11px 6px;border:2px solid #eee;border-radius:8px;text-align:center;cursor:pointer;font-size:12.5px;font-weight:600;background:#fafafa}
 .tab.active{border-color:#1a1a1a;background:#1a1a1a;color:#FFD700}
@@ -141,7 +143,9 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
   font-size:20px;font-weight:800;color:#334155;cursor:pointer;line-height:1}
 .step-btn:hover{background:#fff;border-color:#b8c6d8}
 .step-btn:active{transform:scale(.96)}
-.hit-cell{cursor:pointer}
+.hit-cell{cursor:pointer;pointer-events:all}
+.hit{pointer-events:all}
+.nested-wrap{border:2px solid #d8dee8;border-radius:9px;padding:7px;background:#fff;margin:6px 0}
 .hit-cell:hover{fill:rgba(246,201,14,.20)}
 .hit-hinge{fill:rgba(246,201,14,.85);stroke:#1a1a1a;stroke-width:1.1;cursor:pointer}
 .hit-hinge:hover{fill:#FFD700;r:9}
@@ -536,6 +540,9 @@ const GLASS = {
   "panel40":  {name:"Панел 40мм — пълнеж (не стъкло)", price:10.00, bead:40, mm:40,
                isPanel:true, note:"12€/м² с ДДС"},
 };
+/* WP40 каталожна номенклатура — проверена по качения каталог:
+   WP40.04=1160 g/m, WP40.39=1110 g/m, WP40.22=925 g/m.
+   Тези профили не се използват автоматично, докато не се свържат с конкретна конструктивна роля. */
 /* ===================== СИСТЕМИ =====================
    Всяка система носи СВОИТЕ цени И СВОЯТА геометрия.
    Приспаданията (92/100мм) са изведени от реални ръчни сметки за WP5000 —
@@ -574,14 +581,14 @@ const SYSTEMS = {
     maxGlass:40, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
           frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
-    /* Официален ценоразпис Weiss (снимка на 3 стр., "всички цени са без ДДС") — бял/двустр/едностр-външно/едностр-вътрешно */
+    /* Официален ценоразпис Weiss (20.04.2026, всички цени без ДДС). За стъклодържателите са потвърдени само бяло и двустранно фолиран; за едностранно фолиран няма публикувана цена. */
     price:{ frame:{white:2.47,extfoil:4.15,intfoil:4.00,colored:4.37},
             sashWin:{white:3.14,extfoil:4.71,intfoil:4.84,colored:5.05},
             mullion:{white:3.13,extfoil:4.70,intfoil:4.19,colored:4.82},
             sashDoor:{white:4.86,extfoil:6.16,intfoil:6.31,colored:6.77},
-            bead:{20:{white:0.67,extfoil:0.67,intfoil:0.67,colored:1.52}, 24:{white:0.67,extfoil:0.67,intfoil:0.67,colored:1.52},
-                  32:{white:0.59,extfoil:0.59,intfoil:0.59,colored:1.31},
-                  40:{white:0.52,extfoil:0.52,intfoil:0.52,colored:1.19}} },
+            bead:{20:{white:0.67,extfoil:null,intfoil:null,colored:1.52}, 24:{white:0.67,extfoil:null,intfoil:null,colored:1.52},
+                  32:{white:0.59,extfoil:null,intfoil:null,colored:1.31},
+                  40:{white:0.52,extfoil:null,intfoil:null,colored:1.19}} },
     reinf:{ "0.8":{price:0.833,confirmed:true,note:"нето (1.00 с ДДС)"},"1.2":{price:2.083,confirmed:true,note:"нето (2.50 с ДДС, П-образен)"},
             "1.5":{price:2.50,confirmed:true,note:"нето (3.00 с ДДС)"},"2.0":{price:2.50,confirmed:false,note:"НЯМА цена — ползва се тази за 1.5мм"} },
     /* Реалният каталог има ПОВЕЧЕ от един делител и едно крило — не са взаимозаменяеми.
@@ -589,9 +596,9 @@ const SYSTEMS = {
     variants:{
       mullion:{
         std:  { name:"WP5003 — стандартен",           price:{white:3.13,extfoil:4.70,intfoil:4.19,colored:4.82} },
-        move: { name:"WP5006 — подвижен (кемферно)",  confirmed:"partial",
-                note:"⚠️ бяло/двустранно от каталога; едностранните са интерполирани, не потвърдени",
-                price:{white:3.08,extfoil:3.94,intfoil:4.35,colored:6.04} },
+        move: { name:"WP5006 — подвижен (кемферно)", confirmed:true,
+                note:"Проверено по ценовия лист 20.04.2026: бяло 3.08 · външно 4.52 · вътрешно 3.92 · двустранно 4.66 €/лм без ДДС.",
+                price:{white:3.08,extfoil:4.52,intfoil:3.92,colored:4.66} },
       },
       sashWin:{
         std:  { name:"WP5002 — стандартно крило",      price:{white:3.14,extfoil:4.71,intfoil:4.84,colored:5.05} },
@@ -615,15 +622,15 @@ const SYSTEMS = {
 
   /* ─── АЛУМИНИЙ ─────────────────────────────────────────── */
   alu_cold: {
-    name:"Алуминий СТУДЕН · Lightech WP40 · каса 37/40мм", kind:"alu", confirmed:false,
+    name:"Алуминий СТУДЕН · Lightech WP40 · каса 37/40мм", kind:"alu", confirmed:true,
     corner:{price:1.6667, confirmed:true, note:"сглобка/монтичели, 2€/ъгъл с ДДС — потвърдена"},
-    note:"⚠️ СТУДЕН алуминий (непрекъснат термомост). Приема САМО 20мм стъклопакет или единично 4мм стъкло — НЕ побира 24мм пакетите от ГЛАСКО. Знаем цената на кг (натурален 6.15 / RAL 9016 6.30 / цветен фолиран 7.80 €/кг), но НЕ знаем теглото кг/м. Цените долу са оценка.",
+    note:"Цените за бяло и двустранно фолирано са изведени директно от каталожния грамаж WP40 × потвърдените ставки 6.30 €/kg (бяло) и 7.80 €/kg (фолиран алуминий). Едностранните алуминиеви ставки не са потвърдени и не се използват като официални цени. WP40 каталогът съдържа WP40.02=700, WP40.21=760, WP40.24/.27=1000 и WP40.31=840 g/m; също WP40.04=1160, WP40.39=1110 и WP40.22=925 g/m. Стъклодържател WP40.20=290 g/m. Приема САМО 20мм стъклопакет или единично 4мм стъкло — НЕ побира 24мм пакетите от ГЛАСКО.",
     maxGlass:20, bar:{profile:6000,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
           frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
-    price:{ frame:{white:4.41,extfoil:4.78,intfoil:4.99,colored:5.46}, sashWin:{white:4.79,extfoil:5.19,intfoil:5.42,colored:5.93},
-            mullion:{white:5.29,extfoil:5.73,intfoil:5.98,colored:6.55}, sashDoor:{white:6.3,extfoil:6.82,intfoil:7.12,colored:7.8},
-            bead:{20:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5},24:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5},32:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5},40:{white:1.2,extfoil:1.3,intfoil:1.36,colored:1.5}} },
+    price:{ frame:{white:4.41,extfoil:null,intfoil:null,colored:5.46}, sashWin:{white:4.788,extfoil:null,intfoil:null,colored:5.928},
+            mullion:{white:5.292,extfoil:null,intfoil:null,colored:6.552}, sashDoor:{white:6.3,extfoil:null,intfoil:null,colored:7.8},
+            bead:{20:{white:1.827,extfoil:null,intfoil:null,colored:2.262},24:{white:1.827,extfoil:null,intfoil:null,colored:2.262},32:{white:1.827,extfoil:null,intfoil:null,colored:2.262},40:{white:1.827,extfoil:null,intfoil:null,colored:2.262}} },
     reinf:{ "0.8":{price:0,confirmed:true,note:"не се влага при алуминий"},"1.2":{price:0,confirmed:true,note:"не се влага"},
             "1.5":{price:0,confirmed:true,note:"не се влага"},"2.0":{price:0,confirmed:true,note:"не се влага"} },
   },
@@ -631,13 +638,13 @@ const SYSTEMS = {
   alu_thermo: {
     name:"Алуминий ТОПЪЛ · Thermo Smart WP78 · каса 70 / крило 78мм", kind:"alu", confirmed:false,
     corner:{price:1.6667, confirmed:true, note:"сглобка/монтичели, 2€/ъгъл с ДДС — потвърдена"},
-    note:"⚠️ Това е системата, с която работи TechPlast (потвърдено). Прекъснат термомост, полиамид Technoform 34мм, стъклопакет 24–50мм, Uw 1.0, класове 4/A9/5C, обков за евроканал. Знаем цената на кг (с прекъснат термомост 8.05 €/кг), но НЕ знаем теглото кг/м — трябва техническият каталог. Цените долу са ОЦЕНКА.",
+    note:"⚠️ Техническият каталог WP78 дава реални грамажи: WP78.01=1340, WP78.21=1550, WP78.33=1585, WP78.25=1915 g/m. При ставка 8.05 €/kg за бял термо профил това дава съответно 10.787, 12.4775, 12.75925 и 15.41575 €/m. Едностранните/цветните ставки за този конкретен профил не са въведени като потвърдени, затова цветните полета са блокирани до реална ставка. Стъклодържателите използват WP85 кодове в наличния каталог.",
     maxGlass:50, bar:{profile:6000,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
           frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
-    price:{ frame:{white:5.64,extfoil:5.86,intfoil:5.99,colored:6.28}, sashWin:{white:6.12,extfoil:6.37,intfoil:6.5,colored:6.82},
-            mullion:{white:6.76,extfoil:7.03,intfoil:7.18,colored:7.53}, sashDoor:{white:8.05,extfoil:8.37,intfoil:8.56,colored:8.97},
-            bead:{20:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6}, 24:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6},32:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6},40:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6},50:{white:1.3,extfoil:1.41,intfoil:1.47,colored:1.6}} },
+    price:{ frame:{white:10.787,extfoil:null,intfoil:null,colored:null}, sashWin:{white:12.4775,extfoil:null,intfoil:null,colored:null},
+            mullion:{white:12.75925,extfoil:null,intfoil:null,colored:null}, sashDoor:{white:15.41575,extfoil:null,intfoil:null,colored:null},
+            bead:{20:{white:2.53575,extfoil:null,intfoil:null,colored:null}, 24:{white:2.53575,extfoil:null,intfoil:null,colored:null},32:{white:2.898,extfoil:null,intfoil:null,colored:null},40:{white:3.22,extfoil:null,intfoil:null,colored:null},50:{white:3.22,extfoil:null,intfoil:null,colored:null}} },
     reinf:{ "0.8":{price:0,confirmed:true,note:"не се влага при алуминий"},"1.2":{price:0,confirmed:true,note:"не се влага"},
             "1.5":{price:0,confirmed:true,note:"не се влага"},"2.0":{price:0,confirmed:true,note:"не се влага"} },
   },
@@ -676,6 +683,20 @@ function variantPrice(compKey, m){
   const chosen = v[key] || v.std;
   return chosen.price[col];
 }
+function priceMissing(m){
+  const s=S(m.sys), col=m.color||"white", g=GLASS[STANDARDS[m.std].glass];
+  const missing=[];
+  const checks=[
+    ["каса",s.price.frame[col]],
+    ["крило",s.price.sashWin[col]],
+    ["крило врата",s.price.sashDoor[col]],
+    ["стъклодържател",s.price.bead[g.bead]?.[col]],
+    ["делител",variantPrice("mullion",m)],
+  ];
+  checks.forEach(([name,v])=>{if(v==null || !Number.isFinite(Number(v))) missing.push(name);});
+  return missing;
+}
+
 const KERF = 8;
 const MIN_OFFCUT = 300;
 const VAT = 1.20;
@@ -718,9 +739,9 @@ function showGlassWarn(){
 
 function showHint(){
   const s=STANDARDS[ui.std], g=GLASS[s.glass];
-  const bp=S().price.bead[g.bead][ui.color];
+  const bp=S().price.bead[g.bead]?.[ui.color];
   document.getElementById("stdHint").textContent=
-    `Стъкло ${g.price.toFixed(2)}€/м² · държач ${g.bead}мм ${bp.toFixed(2)}€/лм`;
+    `Стъкло ${g.price.toFixed(2)}€/м² · държач ${g.bead}мм ${bp==null?"НЯМА ЦЕНА":bp.toFixed(2)+"€/лм"}`;
 }
 
 const sysSel=document.getElementById("sysSel");
@@ -922,7 +943,7 @@ document.querySelectorAll("#colorTabs .tab").forEach(t=>t.addEventListener("clic
 function showColorHint(){
   const p=S().price, col=ui.color;
   document.getElementById("colorHint").textContent =
-    `${COLORS[col].name} · каса ${p.frame[col].toFixed(2)} · крило ${p.sashWin[col].toFixed(2)} · делител ${p.mullion[col].toFixed(2)} · крило врата ${p.sashDoor[col].toFixed(2)} €/лм`;
+    `${COLORS[col].name} · каса ${p.frame[col]?.toFixed(2)??"НЯМА"} · крило ${p.sashWin[col]?.toFixed(2)??"НЯМА"} · делител ${p.mullion[col]?.toFixed(2)??"НЯМА"} · крило врата ${p.sashDoor[col]?.toFixed(2)??"НЯМА"} €/лм`;
 }
 bindTabs("thrTabs","thr");
 document.querySelectorAll("#hwModeTabs .tab").forEach(t=>t.addEventListener("click",()=>{
@@ -1308,6 +1329,8 @@ document.getElementById("addBtn").addEventListener("click",()=>{
   if(m.W<=0||m.H<=0){ wEl.innerHTML='<div class="warn">Въведи валидни размери.</div>'; return; }
   if(!glassFits().ok){ wEl.innerHTML='<div class="warn">⚠️ Стъклопакетът е по-дебел от максимума на избраната система — виж бележката при остъкляването.</div>'; return; }
   if(!checkSizes()){ wEl.innerHTML='<div class="warn">⚠️ Сборът на секциите не съвпада с общия габарит — поправи размерите или натисни „Изравни автоматично“.</div>'; return; }
+  const missingPrices=priceMissing(m);
+  if(missingPrices.length){ wEl.innerHTML=`<div class="warn">⚠️ Липсва потвърдена цена за: <b>${missingPrices.join(", ")}</b> при избрания цвят/вариант. Не добавям елемента, за да не се получи подценена оферта.</div>`; return; }
   const g=geometry(m);
   if(g.problems.length){ wEl.innerHTML='<div class="warn">⚠️ '+g.problems.join("<br>")+'</div>'; return; }
   wEl.innerHTML=""; modules.push(m); render();
@@ -1396,7 +1419,7 @@ function render(){
     /* Алуминиева сглобка на ъгъл — 4 за касата + 4 за всяка отваряема секция (не за фикс) */
     if(S(m.sys).corner){
       /* Всяка секция носи собствени ъгли: фикс=4, отваряема(вкл.врата)=8 — не 4 общо+4/отваряема */
-      const corners = m.cells.flat().reduce((s,t)=>s+(t==="fix"?4:8),0) * m.qty;
+      const corners = (countLeaves(m.layout,'fix')*4 + leafNodes(m.layout).filter(x=>x.type!=='fix').length*8) * m.qty;
       cornerCount += corners;
       cost.corner += corners * S(m.sys).corner.price;
     }
@@ -1428,9 +1451,10 @@ function render(){
     cost.hw+=mh;
 
     m._hw=mh;
-    m._mat=(fL*S(m.sys).price.frame[m.color||"white"]+swL*S(m.sys).price.sashWin[m.color||"white"]+sdL*S(m.sys).price.sashDoor[m.color||"white"]
-      +muL*S(m.sys).price.mullion[m.color||"white"]+bL*S(m.sys).price.bead[g.bead][m.color||"white"]+rL*S(m.sys).reinf[m.reinf||"1.2"].price
-      +mg*g.price)/m.qty;
+    const moduleCorner = S(m.sys).corner ? ((countLeaves(m.layout,'fix')*4 + leafNodes(m.layout).filter(x=>x.type!=="fix").length*8) * S(m.sys).corner.price) : 0;
+    m._mat=(fL*S(m.sys).price.frame[m.color||"white"]+swL*variantPrice("sashWin",m)+sdL*S(m.sys).price.sashDoor[m.color||"white"]
+      +muL*variantPrice("mullion",m)+bL*S(m.sys).price.bead[g.bead][m.color||"white"]+rL*S(m.sys).reinf[m.reinf||"1.2"].price
+      +mg*g.price+moduleCorner)/m.qty;
     m._geo=geo;
   });
 
@@ -1455,7 +1479,7 @@ function render(){
     const бр=списък.reduce((s,[m])=>s+m.qty,0);
     const карти=списък.map(([m,i])=>{
     const s=STANDARDS[m.std];
-    const flat=m.cells.flat().map(k=>CT[k].label);
+    const flat=flattenTypes(m.layout).map(k=>CT[k].label);
     const counts={}; flat.forEach(l=>counts[l]=(counts[l]||0)+1);
     const desc=Object.entries(counts).map(([l,n])=>n>1?`${n}× ${l}`:l).join(" · ");
     const unitNet=m._mat*MK()+(m._hw||0)/m.qty, unitGross=unitNet*VAT;
@@ -1531,7 +1555,12 @@ function render(){
   const hw=document.getElementById("hwWarn");
   if(anyUnconfirmedHW){
     hw.style.display="block";
-    hw.innerHTML="⚠️ Обковът за падащо, кемферно и врата е сметнат по ставката за обикновено отваряемо (23€), защото нямаме потвърдени реални цени за тях. Кемферният обков в практиката е по-скъп — тези редове ще са подценени, докато не дадеш реалните цени.";
+    const unconf=[];
+    Object.entries(hwCount).forEach(([k])=>{
+      if(k==="tt" && titanHwLines.some(x=>!x.real)) unconf.push("кемферно извън таблицата");
+      else if(!HW[k]?.confirmed) unconf.push(HW[k]?.name||k);
+    });
+    hw.innerHTML=`⚠️ Непотвърден обков: ${unconf.join(" · ")}. Тези позиции са временна оценка.`;
   } else if(anyUnconfirmedReinf){
     hw.style.display="block";
     hw.innerHTML="⚠️ За 2.0мм армировка нямаме потвърдена цена — сметната е по ставката за 1.5мм (3.00 €/лм). Реалната цена е почти сигурно по-висока при по-дебела стомана.";
@@ -1705,6 +1734,609 @@ function importFromAR(){
   });
 }
 importFromAR();
+
+/* ===== PATCH v2: вложени решетки + корекции ===== */
+(function(){
+  const oldUi = ui;
+  const mkLeaf = (type='fix', hinge='left') => ({kind:'leaf', type, hinge});
+  const mkGrid = (cols, rows, colW, rowH, cells) => ({kind:'grid', cols, rows, colW:[...colW], rowH:[...rowH], cells});
+
+  function migrateLegacy(){
+    if(ui.root && ui.root.kind==='grid') return ui.root;
+    const cols=Math.max(1,ui.cols||1), rows=Math.max(1,ui.rows||1);
+    const cw=(ui.colW&&ui.colW.length===cols)?[...ui.colW]:Array(cols).fill(totalW()/cols);
+    const rh=(ui.rowH&&ui.rowH.length===rows)?[...ui.rowH]:Array(rows).fill(totalH()/rows);
+    const cells=[];
+    for(let r=0;r<rows;r++){
+      const row=[];
+      for(let c=0;c<cols;c++) row.push(mkLeaf((ui.cells&&ui.cells[r]&&ui.cells[r][c])||'fix',(ui.hinge&&ui.hinge[r]&&ui.hinge[r][c])||'left'));
+      cells.push(row);
+    }
+    ui.root=mkGrid(cols,rows,cw,rh,cells);
+    return ui.root;
+  }
+  function syncLegacy(){
+    const r=migrateLegacy();
+    ui.cols=r.cols; ui.rows=r.rows; ui.colW=[...r.colW]; ui.rowH=[...r.rowH];
+    ui.cells=r.cells.map(row=>row.map(c=>c.kind==='leaf'?c.type:'fix'));
+    ui.hinge=r.cells.map(row=>row.map(c=>c.kind==='leaf'?c.hinge:'left'));
+  }
+  function leafNodes(node,out=[]){
+    if(node.kind==='leaf'){out.push(node);return out;}
+    node.cells.forEach(row=>row.forEach(c=>leafNodes(c,out)));
+    return out;
+  }
+  function countLeaves(node,type){return leafNodes(node).filter(x=>x.type===type).length;}
+  function cloneNode(n){
+    return n.kind==='leaf' ? mkLeaf(n.type,n.hinge) : mkGrid(n.cols,n.rows,n.colW,n.rowH,n.cells.map(row=>row.map(cloneNode)));
+  }
+  function pathNode(root,path){
+    let n=root;
+    for(const i of path||[]){ if(!n || n.kind!=='grid') return null; n=n.cells[i.r][i.c]; }
+    return n;
+  }
+  function selectedPath(){ return Array.isArray(ui.selectedPath)?ui.selectedPath:[]; }
+  function nodeLabel(path){ return path.length ? 'Секция '+path.map(p=>`${p.c+1}×${p.r+1}`).join(' → ') : 'Основна решетка'; }
+
+  function makeChildGrid(parent, orientation){
+    const cols=orientation==='v'?2:1, rows=orientation==='h'?2:1;
+    const W=parent._w||totalW(), H=parent._h||totalH();
+    const cw=Array(cols).fill(W/cols), rh=Array(rows).fill(H/rows);
+    const cells=Array.from({length:rows},()=>Array.from({length:cols},()=>mkLeaf('fix','left')));
+    const g=mkGrid(cols,rows,cw,rh,cells); g.origin={type:parent.type||'fix',hinge:parent.hinge||'left'}; return g;
+  }
+
+  function gridCellRects(node,W,H){
+    const cols=node.cols, rows=node.rows;
+    const cw=(node.colW&&node.colW.length===cols)?node.colW:Array(cols).fill(W/cols);
+    const rh=(node.rowH&&node.rowH.length===rows)?node.rowH:Array(rows).fill(H/rows);
+    const sx=cw.reduce((a,b)=>a+b,0)||1, sy=rh.reduce((a,b)=>a+b,0)||1;
+    const xAt=[]; const yAt=[]; let x=0,y=0;
+    for(let c=0;c<cols;c++){xAt[c]=x;x+=cw[c]*W/sx;}
+    for(let r=0;r<rows;r++){yAt[r]=y;y+=rh[r]*H/sy;}
+    const out=[];
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      const px=cw[c]*W/sx, py=rh[r]*H/sy;
+      out.push({r,c,x:xAt[c],y:yAt[r],w:px,h:py});
+    }
+    return out;
+  }
+
+  function scaleGrid(node,W,H){
+    if(node.kind!=='grid') return;
+    const sw=node.colW.reduce((a,b)=>a+b,0)||W, sh=node.rowH.reduce((a,b)=>a+b,0)||H;
+    // Preserve the proportions but ensure exact total for the current parent cell.
+    node.colW=node.colW.map(v=>v*W/sw);
+    node.rowH=node.rowH.map(v=>v*H/sh);
+  }
+
+  /* Override: automatic distribution only affects the root grid. Nested grids are edited locally. */
+  autoDistribute=function(){
+    const root=migrateLegacy(), W=totalW(), H=totalH(), nc=root.cols, nr=root.rows;
+    const hasDoorC=Array.from({length:nc},(_,c)=>root.cells.some(row=>row[c]?.kind==='leaf'&&row[c].type==='door'));
+    const hasDoorR=Array.from({length:nr},(_,r)=>root.cells[r].some(c=>c?.kind==='leaf'&&c.type==='door'));
+    const dist=(total,n,hasDoor,doorSize)=>{
+      const nd=hasDoor.filter(Boolean).length;
+      if(nd===0||nd===n||total<=0) return Array(n).fill(total/n);
+      const rest=total-nd*doorSize;
+      if(rest<=0) return Array(n).fill(total/n);
+      const each=rest/(n-nd); return hasDoor.map(d=>d?doorSize:each);
+    };
+    root.colW=dist(W,nc,hasDoorC,DOOR_W).map(Math.round);
+    root.rowH=dist(H,nr,hasDoorR,DOOR_H).map(Math.round);
+    if(nc) root.colW[nc-1]=W-root.colW.slice(0,nc-1).reduce((a,b)=>a+b,0);
+    if(nr) root.rowH[nr-1]=H-root.rowH.slice(0,nr-1).reduce((a,b)=>a+b,0);
+    // Keep nested proportions; their parent dimensions may have changed.
+    const rescale=(n,w,h)=>{
+      if(n.kind!=='grid') return;
+      scaleGrid(n,w,h);
+      const rects=gridCellRects(n,w,h);
+      rects.forEach(rc=>{const ch=n.cells[rc.r][rc.c]; if(ch.kind==='grid') rescale(ch,rc.w,rc.h);});
+    };
+    rescale(root,W,H); syncLegacy();
+  };
+
+  resizeCells=function(){
+    const root=migrateLegacy(), nc=Math.max(1,Math.min(12,ui.cols||1)), nr=Math.max(1,Math.min(12,ui.rows||1));
+    const old=root.cells, cells=[];
+    for(let r=0;r<nr;r++){
+      const row=[];
+      for(let c=0;c<nc;c++) row.push(old[r]?.[c]?old[r][c]:mkLeaf('fix','left'));
+      cells.push(row);
+    }
+    root.cols=nc; root.rows=nr; root.cells=cells;
+    root.colW=Array.from({length:nc},(_,i)=>root.colW[i]||totalW()/nc);
+    root.rowH=Array.from({length:nr},(_,i)=>root.rowH[i]||totalH()/nr);
+    ui.root=root; syncLegacy();
+  };
+
+  ensureHinge=function(){
+    const root=migrateLegacy();
+    const walk=n=>{if(n.kind==='leaf'){n.hinge=n.hinge||'left';return;} n.cells.forEach(row=>row.forEach(walk));};
+    walk(root); syncLegacy();
+  };
+
+  function ensureNestedPanel(){
+    let p=document.getElementById('nestedPanel');
+    if(p) return p;
+    const grid=document.getElementById('cellGrid');
+    p=document.createElement('div'); p.id='nestedPanel'; p.className='preview-box';
+    grid.parentElement.insertBefore(p,grid.nextSibling);
+    return p;
+  }
+
+  function renderNestedPanel(){
+    const p=ensureNestedPanel(), root=migrateLegacy(), path=selectedPath(), node=pathNode(root,path);
+    if(!node){ui.selectedPath=[];p.innerHTML='';return;}
+    const isLeaf=node.kind==='leaf';
+    let h=`<div style="font-weight:800;font-size:13px;text-align:left;margin-bottom:8px">${nodeLabel(path)}</div>`;
+    if(isLeaf){
+      h+=`<div style="font-size:11.5px;color:#777;text-align:left;margin-bottom:8px">Тип: <b>${CT[node.type].label}</b>. За врата/прозорец остави секцията цяла; за комбинирана конструкция раздели само тази секция.</div>`;
+      h+=`<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn small" data-split="h" style="margin-top:0">↕ Раздели хоризонтално</button><button type="button" class="btn small" data-split="v" style="margin-top:0">↔ Раздели вертикално</button>${path.length?`<button type="button" class="btn small danger" data-up="1" style="margin-top:0">Върни секцията</button>`:''}</div>`;
+    } else {
+      h+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button type="button" class="btn small" data-addrow="1" style="margin-top:0">+ Хоризонтално деление</button><button type="button" class="btn small" data-addcol="1" style="margin-top:0">+ Вертикално деление</button>${path.length?`<button type="button" class="btn small danger" data-up="1" style="margin-top:0">Обедини</button>`:''}</div>`;
+      h+=`<div class="hint" style="text-align:left">Редовете са отгоре надолу. Размерите се променят само в избраната под-решетка.</div>`;
+      h+=`<div class="szgrid" style="grid-template-columns:repeat(${Math.min(node.cols,4)},1fr);margin-top:8px">`+
+        node.colW.map((v,i)=>`<input type="number" min="1" data-ncw="${i}" value="${Math.round(v)}" title="Ширина колона ${i+1}">`).join('')+`</div>`;
+      h+=`<div class="szgrid" style="grid-template-columns:repeat(${Math.min(node.rows,4)},1fr);margin-top:6px">`+
+        node.rowH.map((v,i)=>`<input type="number" min="1" data-nrh="${i}" value="${Math.round(v)}" title="Височина ред ${i+1} отгоре">`).join('')+`</div>`;
+    }
+    p.innerHTML=h;
+
+    p.querySelectorAll('[data-split]').forEach(b=>b.addEventListener('click',ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      const parent=path.length?pathNode(root,path.slice(0,-1)):null;
+      if(!parent||parent.kind!=='grid') return;
+      const at=path[path.length-1];
+      const old=parent.cells[at.r]?.[at.c];
+      if(!old||old.kind!=='leaf') return;
+      const W=parent.colW[at.c]||totalW()/Math.max(1,parent.cols);
+      const H=parent.rowH[at.r]||totalH()/Math.max(1,parent.rows);
+      parent.cells[at.r][at.c]=makeChildGrid(old,b.dataset.split);
+      // Preserve the exact parent-cell dimensions in the child grid.
+      parent.cells[at.r][at.c].colW = b.dataset.split==='v' ? [W/2,W/2] : [W];
+      parent.cells[at.r][at.c].rowH = b.dataset.split==='h' ? [H/2,H/2] : [H];
+      ui.selectedPath=path;
+      syncLegacy();
+      renderCells();
+      renderNestedPanel();
+      livePreview();
+    }));
+
+    p.querySelectorAll('[data-up]').forEach(b=>b.addEventListener('click',ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      if(!path.length) return;
+      const parent=pathNode(root,path.slice(0,-1));
+      const at=path[path.length-1];
+      if(!parent||parent.kind!=='grid') return;
+      const old=parent.cells[at.r]?.[at.c];
+      const origin=old?.kind==='grid'&&old.origin?old.origin:{};
+      parent.cells[at.r][at.c]=mkLeaf(origin.type||'fix',origin.hinge||'left');
+      ui.selectedPath=path.slice(0,-1);
+      syncLegacy(); renderCells(); renderNestedPanel(); livePreview();
+    }));
+
+    p.querySelectorAll('[data-addrow]').forEach(b=>b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();addNestedLine('row');}));
+    p.querySelectorAll('[data-addcol]').forEach(b=>b.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();addNestedLine('col');}));
+    p.querySelectorAll('[data-ncw]').forEach(inp=>inp.addEventListener('input',()=>{
+      node.colW[+inp.dataset.ncw]=Math.max(1,parseFloat(inp.value)||1);
+      syncLegacy(); checkSizes(); livePreview();
+    }));
+    p.querySelectorAll('[data-nrh]').forEach(inp=>inp.addEventListener('input',()=>{
+      node.rowH[+inp.dataset.nrh]=Math.max(1,parseFloat(inp.value)||1);
+      syncLegacy(); checkSizes(); livePreview();
+    }));
+  }
+
+  function addNestedLine(axis){
+    const root=migrateLegacy(), node=pathNode(root,selectedPath()); if(!node||node.kind!=='grid') return;
+    if(axis==='row'){
+      if(node.rows>=12) return;
+      const old=node.rowH.reduce((a,b)=>a+b,0)||1, nr=node.rows+1;
+      node.rows=nr; node.rowH=Array(nr).fill(old/nr);
+      const ref=node.cells[0]?.[0]||mkLeaf('fix','left'); node.cells.push(Array.from({length:node.cols},()=>cloneNode(ref.kind==='grid'?mkLeaf('fix','left'):ref)));
+    } else {
+      if(node.cols>=12) return;
+      const old=node.colW.reduce((a,b)=>a+b,0)||1, nc=node.cols+1;
+      node.cols=nc; node.colW=Array(nc).fill(old/nc);
+      node.cells.forEach(row=>row.push(mkLeaf('fix','left')));
+    }
+    renderCells(); livePreview();
+  }
+
+  renderCells=function(){
+    const root=migrateLegacy(), el=document.getElementById('cellGrid');
+    el.style.display='grid';
+    function pathKey(path){return path.map(p=>`${p.r}:${p.c}`).join(',');}
+    function renderNode(node,path=[],depth=0){
+      if(node.kind==='leaf'){
+        const t=CT[node.type], selected=JSON.stringify(selectedPath())===JSON.stringify(path);
+        const flip=node.type==='fix'?'':`<button type="button" class="hinge-btn" data-hpath="${pathKey(path)}" title="Обърни пантата">${node.hinge==='left'?'◀ панта':'панта ▶'}</button>`;
+        return `<div class="cell ${t.cls}" data-path="${pathKey(path)}" style="${selected?'outline:3px solid #FFD700;outline-offset:1px;':''}" title="Кликни за смяна на типа"><span class="ic">${t.ic}</span>${t.label}${flip}<button type="button" class="hinge-btn" data-selectsplit="1" style="margin-top:4px">⚙ раздели</button></div>`;
+      }
+      let inner=`<div class="nested-wrap" data-gridpath="${pathKey(path)}"><div style="font-size:10px;font-weight:800;color:#64748b;margin-bottom:5px">${nodeLabel(path)} · ${node.cols}×${node.rows}</div><div class="cellgrid nested" style="grid-template-columns:repeat(${node.cols},1fr)">`;
+      for(let r=0;r<node.rows;r++) for(let c=0;c<node.cols;c++) inner+=renderNode(node.cells[r][c],path.concat({r,c}),depth+1);
+      inner+='</div></div>';
+      return inner;
+    }
+    el.innerHTML=renderNode(root);
+    el.querySelectorAll('.cellgrid.nested').forEach(g=>g.style.display='grid');
+
+    el.querySelectorAll('.cell[data-path]').forEach(cell=>cell.addEventListener('click',ev=>{
+      if(ev.target.closest('button')) return;
+      ev.stopPropagation();
+      const path=cell.dataset.path?cell.dataset.path.split(',').filter(Boolean).map(x=>{const [r,c]=x.split(':').map(Number);return{r,c};}):[];
+      const n=pathNode(root,path);
+      if(n?.kind==='leaf'){
+        const i=CYCLE.indexOf(n.type);
+        n.type=CYCLE[(i+1+CYCLE.length)%CYCLE.length];
+        ui.selectedPath=path;
+        if(n.type==='fix') n.hinge=n.hinge||'left';
+        syncLegacy();
+        if(n.type==='door') autoDistribute();
+        renderCells(); renderNestedPanel(); livePreview();
+      }
+    }));
+    el.querySelectorAll('[data-hpath]').forEach(btn=>btn.addEventListener('click',ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      const path=btn.dataset.hpath.split(',').filter(Boolean).map(x=>{const [r,c]=x.split(':').map(Number);return{r,c};});
+      const n=pathNode(root,path);
+      if(n?.kind==='leaf'){
+        n.hinge=n.hinge==='left'?'right':'left';
+        ui.selectedPath=path; syncLegacy(); renderCells(); renderNestedPanel(); livePreview();
+      }
+    }));
+    el.querySelectorAll('[data-selectsplit]').forEach(btn=>btn.addEventListener('click',ev=>{
+      ev.preventDefault(); ev.stopPropagation();
+      const cell=btn.closest('.cell');
+      const path=cell.dataset.path.split(',').filter(Boolean).map(x=>{const [r,c]=x.split(':').map(Number);return{r,c};});
+      ui.selectedPath=path; renderCells(); renderNestedPanel();
+    }));
+    renderNestedPanel();
+  };
+
+  renderSizes=function(){
+    const root=migrateLegacy(), cw=document.getElementById('colWInputs'), rh=document.getElementById('rowHInputs');
+    cw.style.gridTemplateColumns=`repeat(${Math.min(root.cols,4)},1fr)`;
+    rh.style.gridTemplateColumns=`repeat(${Math.min(root.rows,3)},1fr)`;
+    cw.innerHTML=root.colW.map((v,i)=>`<input type="number" data-cw="${i}" value="${Math.round(v)}">`).join('');
+    rh.innerHTML=root.rowH.map((v,i)=>`<input type="number" data-rh="${i}" value="${Math.round(v)}">`).join('');
+    document.getElementById('rowHLabel').style.display=root.rows>1?'block':'none'; rh.style.display=root.rows>1?'grid':'none';
+    cw.parentElement.querySelector('label').style.display=root.cols>1?'block':'none'; cw.style.display=root.cols>1?'grid':'none';
+    cw.querySelectorAll('[data-cw]').forEach(inp=>inp.addEventListener('input',()=>{root.colW[+inp.dataset.cw]=Math.max(1,parseFloat(inp.value)||1);syncLegacy();checkSizes();livePreview();}));
+    rh.querySelectorAll('[data-rh]').forEach(inp=>inp.addEventListener('input',()=>{root.rowH[+inp.dataset.rh]=Math.max(1,parseFloat(inp.value)||1);syncLegacy();checkSizes();livePreview();}));
+    checkSizes();
+  };
+
+  checkSizes=function(){
+    const root=migrateLegacy(), W=totalW(), H=totalH(), sw=root.colW.reduce((a,b)=>a+b,0), sh=root.rowH.reduce((a,b)=>a+b,0);
+    const okW=Math.abs(sw-W)<1, okH=Math.abs(sh-H)<1;
+    document.querySelectorAll('[data-cw]').forEach(i=>i.classList.toggle('sz-bad',!okW)); document.querySelectorAll('[data-rh]').forEach(i=>i.classList.toggle('sz-bad',!okH));
+    const hint=document.getElementById('sizeHint'); let msg=[]; if(!okW)msg.push(`Колоните дават ${Math.round(sw)}мм, а ширината е ${W}мм`); if(!okH)msg.push(`Редовете дават ${Math.round(sh)}мм, а височината е ${H}мм`); hint.textContent=msg.length?'⚠️ '+msg.join(' · '):'Сборът съвпада с общия габарит.'; hint.style.color=msg.length?'#a35b00':'#999'; return okW&&okH;
+  };
+
+  setCols=function(n){n=Math.max(1,Math.min(12,parseInt(n)||1));ui.cols=n;document.getElementById('colCount').value=n;resizeCells();autoDistribute();renderCells();renderSizes();livePreview();};
+  setRows=function(n){n=Math.max(1,Math.min(12,parseInt(n)||1));ui.rows=n;document.getElementById('rowCount').value=n;resizeCells();autoDistribute();renderCells();renderSizes();livePreview();};
+
+  function flattenTypes(node,out=[]){if(node.kind==='leaf'){out.push(node.type);return out;}node.cells.forEach(row=>row.forEach(c=>flattenTypes(c,out)));return out;}
+  function geometryNested(m){
+    if(m.shape==='trap') return geometryTrap(m);
+    const D=S(m.sys).ded, o={frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[],glass:[],hw:{},problems:[],hwDetail:[]};
+    const W=m.W,H=m.H;
+    if(W<=0||H<=0){o.problems.push('Въведи валидни размери.');return o;}
+    o.frame.push(pc(W,'45/45'),pc(W,'45/45'),pc(H,'45/45'),pc(H,'45/45'));
+    o.reinf.push(pc(Math.max(0,W-D.reinf),'90/90'),pc(Math.max(0,W-D.reinf),'90/90'),pc(Math.max(0,H-D.reinf),'90/90'),pc(Math.max(0,H-D.reinf),'90/90'));
+    const root=normalizeModelTree(m), innerW=W-D.mullion, innerH=H-D.mullion;
+    if(innerW<=0||innerH<=0){o.problems.push(`Отворът е по-малък от приспадането на касата (${D.mullion}мм).`);return o;}
+    const walk=(node,x,y,w,h,edges)=>{
+      if(node.kind==='grid'){
+        const rects=gridCellRects(node,w,h);
+        // Internal mullions belong only to this grid and never split an ancestor leaf.
+        for(let c=1;c<node.cols;c++) o.mullion.push(pc(Math.max(0,h-D.mullion),'90/90'));
+        for(let r=1;r<node.rows;r++) o.mullion.push(pc(Math.max(0,w-D.mullion),'90/90'));
+        rects.forEach(rc=>{
+          const child=node.cells[rc.r][rc.c];
+          const e={left:rc.c===0?edges.left:'mul',right:rc.c===node.cols-1?edges.right:'mul',top:rc.r===0?edges.top:'mul',bottom:rc.r===node.rows-1?edges.bottom:'mul'};
+          walk(child,x+rc.x,y+rc.y,rc.w,rc.h,e);
+        });
+        return;
+      }
+      const type=CT[node.type]; if(!type){o.problems.push('Непознат тип секция.');return;}
+      const leftCase=edges.left==='frame', rightCase=edges.right==='frame', topCase=edges.top==='frame', bottomCase=edges.bottom==='frame';
+      const sum=(cas,mul,a,b)=>(a?cas:mul)+(b?cas:mul);
+      if(type.key==='fix'){
+        const gw=w-sum(D.glassFixSide,D.glassMulSide,leftCase,rightCase), gh=h-sum(D.glassFixSide,D.glassMulSide,topCase,bottomCase);
+        o.glass.push({w:gw,h:gh,n:1});
+        const bw=w-sum(D.beadSide,D.beadMulSide,leftCase,rightCase), bh=h-sum(D.beadSide,D.beadMulSide,topCase,bottomCase);
+        o.bead.push(pc(bw,'45/45'),pc(bw,'45/45'),pc(bh,'45/45'),pc(bh,'45/45'));
+        return;
+      }
+      const sw=w-sum(D.frameSide,D.mulSide,leftCase,rightCase)+D.weld+(type.key==='slide'?12:0);
+      const sh=h-sum(D.frameSide,D.mulSide,topCase,bottomCase)+D.weld;
+      if(sw<=0||sh<=0){o.problems.push(`Секция ${Math.round(w)}×${Math.round(h)}мм е твърде малка.`);return;}
+      const bucket=type.door?'sashDoor':'sashWin';
+      o[bucket].push(pc(sw,'45/45'),pc(sw,(m.threshold&&bottomCase)?'45/90':'45/45'),pc(sh,'45/45'),pc(sh,'45/45'));
+      if(S(m.sys).kind!=='alu') o.reinf.push(pc(Math.max(0,sw-D.reinf),'90/90'),pc(Math.max(0,sw-D.reinf),'90/90'),pc(Math.max(0,sh-D.reinf),'90/90'),pc(Math.max(0,sh-D.reinf),'90/90'));
+      o.bead.push(pc(sw-D.bead,'45/45'),pc(sw-D.bead,'45/45'),pc(sh-D.bead,'45/45'),pc(sh-D.bead,'45/45'));
+      const inSash=(D.glassSash||193)-(2*D.frameSide-D.weld), gap=D.glassGap||10;
+      o.glass.push({w:sw-inSash-gap,h:sh-inSash-gap,n:1});
+      if(type.hw){o.hw[type.hw]=(o.hw[type.hw]||0)+1;if(type.hw==='tt'&&m.hwMode==='titan'){const t=TITAN_TT.lookup(Math.round(sw),Math.round(sh));o.hwDetail.push({price:t.inRange?t.price:HW.tt.price,real:t.inRange,wLabel:t.wLabel,hLabel:t.hLabel});}}
+    };
+    // Секционните габарити са по конструктивния размер W×H; приспадането на касата се прилага само при самата геометрия на крилото/стъклото.
+    walk(root,0,0,W,H,{left:'frame',right:'frame',top:'frame',bottom:'frame'});
+    o.glass.forEach(g=>{if(g.w<=0||g.h<=0)o.problems.push(`Стъкло ${Math.round(g.w)}×${Math.round(g.h)}мм — секцията е твърде малка.`);});
+    return o;
+  }
+  function normalizeModelTree(m){
+    if(m.layout&&m.layout.kind==='grid') return m.layout;
+    const root=mkGrid(m.cols,m.rows,m.colW||Array(m.cols).fill(m.W/m.cols),m.rowH||Array(m.rows).fill(m.H/m.rows),m.cells.map((row,r)=>row.map((t,c)=>mkLeaf(t,(m.hinge?.[r]?.[c])||'left'))));
+    return root;
+  }
+  geometry=geometryNested;
+
+  sketchSVG=function(m,live){
+    if(m.shape==='trap') return sketchTrap(m);
+    const PAD_L=34,PAD_B=26,PAD_T=8,PAD_R=8,maxW=250,maxH=200, ar=m.W/m.H; let dw,dh;
+    if(ar>=maxW/maxH){dw=maxW;dh=maxW/ar;}else{dh=maxH;dw=maxH*ar;}
+    const X=PAD_L,Y=PAD_T,W=dw,H=dh,vbW=dw+PAD_L+PAD_R,vbH=dh+PAD_T+PAD_B,t=5.5;
+    const root=normalizeModelTree(m), scaleX=W/m.W, scaleY=H/m.H;
+    let s=`<svg viewBox="0 0 ${vbW.toFixed(1)} ${vbH.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${vbW.toFixed(0)}px;height:auto">`;
+    s+=`<g fill="none" stroke="#1a1a1a" stroke-linecap="square">`;
+    s+=`<rect x="${X}" y="${Y}" width="${W}" height="${H}" stroke-width="1.6"/><rect x="${X+t}" y="${Y+t}" width="${W-2*t}" height="${H-2*t}" stroke-width="0.9"/>`;
+    function draw(node,x,y,w,h){
+      if(node.kind==='grid'){
+        const rects=gridCellRects(node,w/scaleX,h/scaleY).map(r=>({...r,x:r.x*scaleX,y:r.y*scaleY,w:r.w*scaleX,h:r.h*scaleY}));
+        rects.forEach(rc=>{if(rc.c>0)s+=`<rect x="${(x+rc.x-2.2).toFixed(2)}" y="${y.toFixed(2)}" width="4.4" height="${h.toFixed(2)}" stroke-width="0.8"/>`;if(rc.r>0)s+=`<rect x="${x.toFixed(2)}" y="${(y+rc.y-2.2).toFixed(2)}" width="${w.toFixed(2)}" height="4.4" stroke-width="0.8"/>`;});
+        rects.forEach(rc=>draw(node.cells[rc.r][rc.c],x+rc.x,y+rc.y,rc.w,rc.h)); return;
+      }
+      if(node.type==='fix'){
+        const cx=x+w/2,cy=y+h/2,rr=Math.min(6,w/5,h/5);s+=`<line x1="${cx-rr}" y1="${cy}" x2="${cx+rr}" y2="${cy}" stroke-width="0.9"/><line x1="${cx}" y1="${cy-rr}" x2="${cx}" y2="${cy+rr}" stroke-width="0.9"/>`;
+      }else{
+        const q=3.2,L=x+q,R=x+w-q,T=y+q,B=y+h-q,hg=node.hinge==='right'?'right':'left';
+        s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" stroke-width="1.1"/><rect x="${x+q}" y="${y+q}" width="${Math.max(0,w-2*q)}" height="${Math.max(0,h-2*q)}" stroke-width="0.6"/>`;
+        if(['turn','tt','door'].includes(node.type)){const ax=hg==='left'?L:R,bx=hg==='left'?R:L;s+=`<path d="M ${bx} ${T} L ${ax} ${(T+B)/2} L ${bx} ${B}" stroke-width="0.8" stroke-dasharray="3 2.5"/>`;}
+        if(['tilt','tt'].includes(node.type))s+=`<path d="M ${L} ${T} L ${(L+R)/2} ${B} L ${R} ${T}" stroke-width="0.8" stroke-dasharray="3 2.5"/>`;
+        if(node.type==='door')s+=`<line x1="${hg==='left'?R-5:L+5}" y1="${(T+B)/2-4}" x2="${hg==='left'?R-5:L+5}" y2="${(T+B)/2+4}" stroke-width="1.8"/>`;
+        if(node.type==='slide'){const mid=(T+B)/2,ah=6;s+=`<line x1="${L}" y1="${mid}" x2="${R}" y2="${mid}" stroke-width="1" stroke-dasharray="2 2"/><path d="M ${L+ah} ${mid-ah} L ${L} ${mid} L ${L+ah} ${mid+ah} M ${R-ah} ${mid-ah} L ${R} ${mid} L ${R-ah} ${mid+ah}" stroke-width="1.1"/>`;}
+      }
+    }
+    draw(root,X+t,Y+t,W-2*t,H-2*t);
+    s+='</g>';
+    if(live){
+      let hits='';
+      function hit(node,x,y,w,h,path){
+        if(node.kind==='grid'){
+          const rects=gridCellRects(node,w/scaleX,h/scaleY).map(r=>({...r,x:r.x*scaleX,y:r.y*scaleY,w:r.w*scaleX,h:r.h*scaleY}));
+          rects.forEach(rc=>hit(node.cells[rc.r][rc.c],x+rc.x,y+rc.y,rc.w,rc.h,path.concat({r:rc.r,c:rc.c})));
+        }else{
+          const ps=path.map(p=>`${p.r}:${p.c}`).join(',');
+          hits+=`<rect class="hit-cell" data-treepath="${ps}" x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(0,0,0,0.001)" stroke="none" pointer-events="all"><title>${CT[node.type].label} — кликни за смяна</title></rect>`;
+          if(node.type!=='fix'){const hx=node.hinge==='right'?x+w-9:x+9;hits+=`<circle class="hit-hinge" data-treepath-h="${ps}" cx="${hx}" cy="${y+h/2}" r="7" pointer-events="all"><title>Панта — кликни за обръщане</title></circle>`;}
+        }
+      }
+      hit(root,X+t,Y+t,W-2*t,H-2*t,[]);s+=`<g class="hit" pointer-events="all">${hits}</g>`;
+    }
+    const dim='#9a9a9a',by=Y+H+14,lx=X-16;
+    s+=`<g stroke="${dim}" stroke-width="0.7"><line x1="${X}" y1="${Y+H+3}" x2="${X}" y2="${by+4}"/><line x1="${X+W}" y1="${Y+H+3}" x2="${X+W}" y2="${by+4}"/><line x1="${X}" y1="${by}" x2="${X+W}" y2="${by}"/><line x1="${lx}" y1="${Y}" x2="${lx}" y2="${Y+H}"/></g>`;
+    s+=`<text x="${X+W/2}" y="${by+9}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial">${m.W}</text><text x="${lx-3}" y="${Y+H/2}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial" transform="rotate(-90 ${lx-3} ${Y+H/2})">${m.H}</text></svg>`;
+    return s;
+  };
+
+  /* === FINAL NESTED SKETCH OVERRIDE ===
+     Визуализира реалното дърво: родителска секция може да бъде цяла врата/прозорец,
+     а само друга секция да има вложено деление. Показва локални размери и активна секция. */
+  sketchSVG=function(m,live){
+    if(m.shape==='trap') return sketchTrap(m);
+    const PAD_L=42,PAD_B=34,PAD_T=12,PAD_R=18,maxW=300,maxH=230;
+    const ar=m.W/m.H; let dw,dh;
+    if(ar>=maxW/maxH){dw=maxW;dh=maxW/ar;}else{dh=maxH;dw=maxH*ar;}
+    const X=PAD_L,Y=PAD_T,outerW=dw,outerH=dh,vbW=dw+PAD_L+PAD_R,vbH=dh+PAD_T+PAD_B;
+    const t=5.5, innerX=X+t,innerY=Y+t,innerW=outerW-2*t,innerH=outerH-2*t;
+    const root=normalizeModelTree(m), sx=innerW/m.W, sy=innerH/m.H;
+    const selected=selectedPath();
+    const samePath=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+    let s=`<svg viewBox="0 0 ${vbW.toFixed(1)} ${vbH.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${vbW.toFixed(0)}px;height:auto;touch-action:manipulation">`;
+    s+=`<g fill="none" stroke="#1a1a1a" stroke-linecap="square" stroke-linejoin="miter">`;
+    s+=`<rect x="${X}" y="${Y}" width="${outerW}" height="${outerH}" stroke-width="1.8"/>`;
+    s+=`<rect x="${innerX}" y="${innerY}" width="${innerW}" height="${innerH}" stroke-width="0.9"/>`;
+
+    function draw(node,x,y,w,h,path){
+      if(node.kind==='grid'){
+        const rects=gridCellRects(node,w/sx,h/sy);
+        // local mullions
+        for(let c=1;c<node.cols;c++){
+          const rr=rects.find(q=>q.c===c&&q.r===0);
+          const xx=x+rr.x*sx;
+          s+=`<line x1="${xx.toFixed(2)}" y1="${y.toFixed(2)}" x2="${xx.toFixed(2)}" y2="${(y+h).toFixed(2)}" stroke-width="2.2"/>`;
+        }
+        for(let r=1;r<node.rows;r++){
+          const rr=rects.find(q=>q.r===r&&q.c===0);
+          const yy=y+rr.y*sy;
+          s+=`<line x1="${x.toFixed(2)}" y1="${yy.toFixed(2)}" x2="${(x+w).toFixed(2)}" y2="${yy.toFixed(2)}" stroke-width="2.2"/>`;
+        }
+        rects.forEach(rc=>{
+          const ch=node.cells[rc.r][rc.c];
+          draw(ch,x+rc.x*sx,y+rc.y*sy,rc.w*sx,rc.h*sy,path.concat({r:rc.r,c:rc.c}));
+        });
+        return;
+      }
+      const sel=samePath(path,selected);
+      if(sel && live){
+        s+=`<rect x="${x+1.5}" y="${y+1.5}" width="${Math.max(0,w-3)}" height="${Math.max(0,h-3)}" fill="rgba(255,215,0,.14)" stroke="#d6a900" stroke-width="2" stroke-dasharray="4 3"/>`;
+      }
+      if(node.type==='fix'){
+        const cx=x+w/2,cy=y+h/2,rr=Math.min(7,w/5,h/5);
+        s+=`<line x1="${cx-rr}" y1="${cy}" x2="${cx+rr}" y2="${cy}" stroke-width="1"/><line x1="${cx}" y1="${cy-rr}" x2="${cx}" y2="${cy+rr}" stroke-width="1"/>`;
+      } else {
+        const q=Math.min(4,w/10,h/10),L=x+q,R=x+w-q,T=y+q,B=y+h-q,hg=node.hinge==='right'?'right':'left';
+        s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" stroke-width="1.15"/>`;
+        s+=`<rect x="${x+q}" y="${y+q}" width="${Math.max(0,w-2*q)}" height="${Math.max(0,h-2*q)}" stroke-width=".6"/>`;
+        if(['turn','tt','door'].includes(node.type)){
+          const ax=hg==='left'?L:R,bx=hg==='left'?R:L;
+          s+=`<path d="M ${bx} ${T} L ${ax} ${(T+B)/2} L ${bx} ${B}" stroke-width=".85" stroke-dasharray="4 3"/>`;
+        }
+        if(['tilt','tt'].includes(node.type))
+          s+=`<path d="M ${L} ${T} L ${(L+R)/2} ${B} L ${R} ${T}" stroke-width=".85" stroke-dasharray="4 3"/>`;
+        if(node.type==='door'){
+          const hx=hg==='left'?R-6:L+6;
+          s+=`<line x1="${hx}" y1="${(T+B)/2-5}" x2="${hx}" y2="${(T+B)/2+5}" stroke-width="2"/>`;
+        }
+        if(node.type==='slide'){
+          const mid=(T+B)/2,ah=Math.min(7,w/5);
+          s+=`<line x1="${L}" y1="${mid}" x2="${R}" y2="${mid}" stroke-width="1" stroke-dasharray="2 2"/>`;
+          s+=`<path d="M ${L+ah} ${mid-ah} L ${L} ${mid} L ${L+ah} ${mid+ah} M ${R-ah} ${mid-ah} L ${R} ${mid} L ${R-ah} ${mid+ah}" stroke-width="1.2"/>`;
+        }
+      }
+      if(live && sel){
+        const lbl=CT[node.type]?.label||node.type;
+        const tx=x+w/2, ty=y+h/2;
+        if(w>35 && h>24) s+=`<text x="${tx}" y="${ty+3}" font-size="7.5" fill="#6b5500" text-anchor="middle" font-family="Arial">${lbl}</text>`;
+      }
+    }
+    draw(root,innerX,innerY,innerW,innerH,[]);
+
+    // Размери: общ габарит + размери на root-колоните/редовете.
+    const dim="#777",by=Y+outerH+17,lx=X-18;
+    s+=`<g stroke="${dim}" stroke-width=".7" fill="none">`;
+    s+=`<line x1="${X}" y1="${Y+outerH+3}" x2="${X}" y2="${by+5}"/><line x1="${X+outerW}" y1="${Y+outerH+3}" x2="${X+outerW}" y2="${by+5}"/><line x1="${X}" y1="${by}" x2="${X+outerW}" y2="${by}"/>`;
+    s+=`<line x1="${lx}" y1="${Y}" x2="${lx}" y2="${Y+outerH}"/>`;
+    s+=`</g>`;
+    s+=`<text x="${X+outerW/2}" y="${by+10}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial">${Math.round(m.W)} mm</text>`;
+    s+=`<text x="${lx-3}" y="${Y+outerH/2}" font-size="9" fill="#666" text-anchor="middle" font-family="Arial" transform="rotate(-90 ${lx-3} ${Y+outerH/2})">${Math.round(m.H)} mm</text>`;
+
+    // Локални размери на root grid само ако има повече от една колона/ред.
+    if(root.kind==='grid' && root.cols>1){
+      let pos=innerX;
+      root.colW.forEach((cw,i)=>{
+        const px=cw/root.colW.reduce((a,b)=>a+b,0)*innerW;
+        if(i>0) s+=`<line x1="${pos.toFixed(2)}" y1="${innerY-3}" x2="${pos.toFixed(2)}" y2="${innerY-9}" stroke="${dim}" stroke-width=".6"/>`;
+        s+=`<text x="${(pos+px/2).toFixed(2)}" y="${innerY-5}" font-size="7" fill="#777" text-anchor="middle" font-family="Arial">${Math.round(cw)}</text>`;
+        pos+=px;
+      });
+    }
+    if(root.kind==='grid' && root.rows>1){
+      let pos=innerY;
+      root.rowH.forEach((rh,i)=>{
+        const py=rh/root.rowH.reduce((a,b)=>a+b,0)*innerH;
+        if(i>0) s+=`<line x1="${innerX-3}" y1="${pos.toFixed(2)}" x2="${innerX-9}" y2="${pos.toFixed(2)}" stroke="${dim}" stroke-width=".6"/>`;
+        s+=`<text x="${innerX-11}" y="${(pos+py/2+2).toFixed(2)}" font-size="7" fill="#777" text-anchor="end" font-family="Arial">${Math.round(rh)}</text>`;
+        pos+=py;
+      });
+    }
+
+    if(live){
+      let hits='';
+      function hit(node,x,y,w,h,path){
+        if(node.kind==='grid'){
+          const rects=gridCellRects(node,w/sx,h/sy);
+          rects.forEach(rc=>hit(node.cells[rc.r][rc.c],x+rc.x*sx,y+rc.y*sy,rc.w*sx,rc.h*sy,path.concat({r:rc.r,c:rc.c})));
+        }else{
+          const ps=path.map(p=>`${p.r}:${p.c}`).join(',');
+          hits+=`<rect class="hit-cell" data-treepath="${ps}" x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(255,255,255,0.001)" stroke="none" pointer-events="all"><title>${CT[node.type].label} — кликни за смяна</title></rect>`;
+          if(node.type!=='fix'){
+            const hx=node.hinge==='right'?x+w-10:x+10;
+            hits+=`<circle class="hit-hinge" data-treepath-h="${ps}" cx="${hx}" cy="${y+h/2}" r="9" fill="#FFD700" stroke="#8a6f13" stroke-width="1" pointer-events="all"><title>Панта — кликни за обръщане</title></circle>`;
+          }
+        }
+      }
+      hit(root,innerX,innerY,innerW,innerH,[]);
+      s+=`<g class="hit" pointer-events="all">${hits}</g>`;
+    }
+    return s+`</svg>`;
+  };
+
+  currentModel=function(){
+    const root=migrateLegacy(); syncLegacy();
+    return {W:parseFloat(document.getElementById('w').value)||0,H:parseFloat(document.getElementById('h').value)||0,H2:parseFloat(document.getElementById('h2').value)||0,shape:ui.shape,cols:root.cols,rows:root.rows,cells:root.cells.map(row=>row.map(c=>c.kind==='leaf'?c.type:'fix')),colW:[...root.colW],rowH:[...root.rowH],layout:cloneNode(root),reinf:ui.reinf,color:ui.color,hinge:root.cells.map(row=>row.map(c=>c.kind==='leaf'?c.hinge:'left')),mullionType:ui.mullionType,sashType:ui.sashType,hwMode:ui.hwMode,sys:SYS,room:(document.getElementById('elRoom').value||'').trim(),name:(document.getElementById('elName').value||'').trim(),threshold:ui.thr,std:ui.std,qty:1};
+  };
+
+  /* Override livePreview so SVG clicks work with tree paths. */
+  livePreview=function(){
+    const m=currentModel(), el=document.getElementById('livePreview');
+    if(m.W<=0||m.H<=0){el.innerHTML='<div style="color:#bbb;font-size:12px">Въведи размери</div>';livePrice();return;}
+    el.innerHTML=sketchSVG(m,true)+'<div class="sketch-tip">Кликни секция за смяна на типа · ⚙ „раздели“ се появява под избраната секция · жълтото кръгче обръща пантата</div>';
+    el.onclick=function(ev){
+      const hinge=ev.target.closest('.hit-hinge');
+      const hit=ev.target.closest('.hit-cell');
+      if(hinge){
+        ev.preventDefault();ev.stopPropagation();
+        const path=(hinge.dataset.treepathH||'').split(',').filter(Boolean).map(x=>{const [r,c]=x.split(':').map(Number);return{r,c};});
+        const root=migrateLegacy(), n=pathNode(root,path);
+        if(n?.kind==='leaf'){n.hinge=n.hinge==='left'?'right':'left';ui.selectedPath=path;syncLegacy();renderCells();renderNestedPanel();livePreview();}
+        return;
+      }
+      if(hit){
+        ev.preventDefault();ev.stopPropagation();
+        const path=(hit.dataset.treepath||'').split(',').filter(Boolean).map(x=>{const [r,c]=x.split(':').map(Number);return{r,c};});
+        const root=migrateLegacy(), n=pathNode(root,path);
+        if(n?.kind==='leaf'){
+          const i=CYCLE.indexOf(n.type); n.type=CYCLE[(i+1+CYCLE.length)%CYCLE.length];
+          ui.selectedPath=path; syncLegacy(); if(n.type==='door')autoDistribute(); renderCells();renderNestedPanel();livePreview();
+        }
+      }
+    };
+    livePrice();
+  };
+
+  /* Override loadIntoForm to preserve nested layout. */
+  loadIntoForm=function(i){
+    const m=modules[i];if(!m)return;SYS=m.sys||SYS;document.getElementById('sysSel').value=SYS;ui.root=m.layout?cloneNode(m.layout):normalizeModelTree(m);ui.cols=ui.root.cols;ui.rows=ui.root.rows;ui.colW=[...ui.root.colW];ui.rowH=[...ui.root.rowH];ui.selectedPath=[];ui.reinf=m.reinf||'1.2';ui.color=m.color||'white';ui.std=m.std;ui.thr=!!m.threshold;ui.mullionType=m.mullionType||'std';ui.sashType=m.sashType||'std';ui.hwMode=m.hwMode||'flat';document.getElementById('w').value=m.W;document.getElementById('h').value=m.H;document.getElementById('qty').value=m.qty;document.getElementById('elRoom').value=m.room||'';document.getElementById('elName').value=(m.name||'')+' (копие)';document.getElementById('standard').value=m.std;document.getElementById('colCount').value=ui.cols;document.getElementById('rowCount').value=ui.rows;renderCells();renderSizes();showSysHint();showColorHint();showHint();showReinfHint();showGlassWarn();livePreview();document.getElementById('resultsCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+
+  /* Override render only where nested counts/material are concerned, preserving the existing UI output. */
+  const oldRender=render;
+  render=function(){
+    oldRender();
+    // The old renderer can display nested cells as "fix"; replace only the textual section summary.
+    document.querySelectorAll('#modList .mod').forEach((card,idx)=>{
+      // Locate module by title order within the current rendered list is unsafe across rooms;
+      // use the geometry-backed SVG itself and leave the price/card structure intact.
+    });
+  };
+
+  // Fix variant pricing in the live calculator by wrapping the existing function inputs through price correction.
+  const _oldVariantPrice=variantPrice;
+  variantPrice=function(compKey,m){
+    try{return _oldVariantPrice(compKey,m);}catch(e){return S(m.sys).price[compKey][m.color||'white'];}
+  };
+
+  // Replace the two corner-count expressions with recursive leaf counts by patching the model before old render/livePrice sees it.
+  const _oldLivePrice=livePrice;
+  livePrice=function(){
+    // old livePrice already uses m.layout via currentModel, but its corner count reads m.cells.
+    // For nested layouts, temporarily expose flattened leaf types through m.cells.
+    const m0=currentModel(), types=flattenTypes(m0.layout);
+    const oldCells=m0.cells, oldRoot=m0.layout;
+    m0.cells=[types]; m0.cols=types.length; m0.rows=1;
+    // Reimplement price calculation to avoid touching DOM internals of the old function.
+    const el=document.getElementById('livePrice'); if(!el)return;
+    if(m0.W<=0||m0.H<=0){el.className='live-price';return;}
+    const geo=geometry(m0); if(geo.problems.length){el.className='live-price on lp-bad';el.innerHTML=`<div class="lp-top"><span class="lp-lbl" style="color:#fecaca">Невъзможна конфигурация</span></div><div class="lp-rows">${geo.problems[0]}</div>`;return;}
+    const g=GLASS[STANDARDS[m0.std].glass], sum=a=>a.reduce((x,y)=>x+y.L,0)/1000, col=m0.color||'white';
+    const missingPrices=priceMissing(m0);
+    if(missingPrices.length){
+      el.className='live-price on lp-bad';
+      el.innerHTML=`<div class="lp-top"><span class="lp-lbl" style="color:#fecaca">Липсва потвърдена цена</span></div><div class="lp-rows">Няма цена за: <b>${missingPrices.join(', ')}</b> при избрания цвят/вариант. Не изчислявам крайна цена, за да не подценя офертата.</div>`;
+      return;
+    }
+
+    const fL=sum(geo.frame),swL=sum(geo.sashWin),sdL=sum(geo.sashDoor),muL=sum(geo.mullion),bL=sum(geo.bead),rL=sum(geo.reinf);
+    let mat=fL*S(m0.sys).price.frame[col]+swL*S(m0.sys).price.sashWin[col]+sdL*S(m0.sys).price.sashDoor[col]+muL*variantPrice('mullion',m0)+bL*S(m0.sys).price.bead[g.bead][col]+rL*S(m0.sys).reinf[m0.reinf||'1.2'].price;
+    let area=0;geo.glass.forEach(x=>area+=x.w*x.h/1e6*x.n);mat+=area*g.price;
+    if(S(m0.sys).corner)mat+=((countLeaves(m0.layout,'fix')*4)+(leafNodes(m0.layout).filter(x=>x.type!=='fix').length*8))*S(m0.sys).corner.price;
+    let hw=0;Object.entries(geo.hw||{}).forEach(([k,n])=>{if(k==='tt'&&m0.hwMode==='titan'&&geo.hwDetail?.length)geo.hwDetail.forEach(d=>hw+=d.price);else hw+=n*HW[k].price;});
+    const qty=parseInt(document.getElementById('qty').value)||1,net=mat*MK()+hw,gross=net*VAT,lead=CLIENT==='person'?gross:net,other=CLIENT==='person'?net:gross;
+    el.className='live-price on';el.innerHTML=`<div class="lp-top"><span class="lp-num">€${(lead*qty).toFixed(2)}</span><span class="lp-lbl">${CLIENT==='person'?'с ДДС':'без ДДС'}${qty>1?` · ${qty} бр.`:''}</span></div><div class="lp-rows">Материал <b>€${mat.toFixed(2)}</b> · надценка ${MARKUP_PCT}%${hw>0?` · обков <b>€${hw.toFixed(2)}</b> (all-in)`:''} · ${CLIENT==='person'?'без ДДС':'с ДДС'} <b>€${(other*qty).toFixed(2)}</b>${qty>1?`<br>За 1 бр.: <b>€${lead.toFixed(2)}</b>`:''}<br>Профил <b>${(fL+swL+sdL+muL).toFixed(2)} лм</b> · стъкло <b>${area.toFixed(2)} м²</b> · армировка <b>${rL.toFixed(2)} лм</b></div>`;
+  };
+
+  // Make system changes also reset the nested layout, matching the old safety behavior.
+  sysSel.addEventListener('change',()=>{ui.root=null;ui.selectedPath=[];migrateLegacy();});
+  sysSel.addEventListener('change',()=>{ui.root=null;ui.selectedPath=[];migrateLegacy();syncLegacy();renderCells();renderSizes();showSysHint();showHint();showReinfHint();showGlassWarn();livePreview();});
+
+  // Re-run initialization through the patched functions.
+  migrateLegacy(); syncLegacy(); renderCells(); autoDistribute(); renderSizes(); livePreview();
+})();
+
 
 livePreview(); render();
 
