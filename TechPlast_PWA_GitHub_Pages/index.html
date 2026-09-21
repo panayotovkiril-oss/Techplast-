@@ -340,8 +340,42 @@ body.compact .mod-head{margin-bottom:2px}
     <div class="tab" data-cl="person">Частно лице (с ДДС)</div>
   </div>
   <label>Надценка — печалба, транспорт и монтаж (%)</label>
-  <input type="number" id="markup" value="75" min="0" step="1">
+  <input type="number" id="markup" value="90" min="0" step="1">
   <div class="hint" id="mkHint"></div>
+</div>
+
+<div class="card no-print" id="ocrCard">
+  <h2>Сверяване на цени по разписка <span style="text-transform:none;letter-spacing:0;font-weight:400;color:#bbb">— качи снимка, инструментът разпознава и сравнява</span></h2>
+  <div class="hint" style="margin-bottom:8px">Снимай стокова разписка/фактура (от телефона) — инструментът чете редовете през OpenRouter (vision модел) и ги сверява с всяка цена, която вече е записана тук. Изисква интернет в момента на разпознаването.</div>
+
+  <button type="button" id="ocrSettingsToggle" class="fold-btn no-print" style="margin-bottom:10px">⚙️ настройки на ключа</button>
+  <div id="ocrSettings" style="display:none;margin-bottom:12px">
+    <label>OpenRouter API ключ</label>
+    <input type="password" id="ocrApiKey" placeholder="sk-or-v1-...">
+    <label style="margin-top:8px">Vision модел (OpenRouter)</label>
+    <input type="text" id="ocrModel" placeholder="anthropic/claude-3.5-sonnet" value="anthropic/claude-3.5-sonnet">
+    <div class="hint" style="margin-top:6px">Ключът се пази само в браузъра на това устройство (localStorage) — НЕ е вграден във файла, така че е безопасно да пращаш/споделяш index_kalibar.html без да издаваш ключа си. Ако моделът горе не съществува в момента на ползване, OpenRouter ще върне грешка — тогава смени с друг vision модел (напр. openai/gpt-4o).</div>
+    <button type="button" id="ocrSaveKey" class="btn small dark" style="margin-top:8px">Запази</button>
+    <span id="ocrKeyStatus" class="hint" style="margin-left:8px"></span>
+  </div>
+
+  <label>Снимки на разписки (може да избереш/снимаш по няколко наведнъж)</label>
+  <input type="file" id="ocrFile" accept="image/*" capture="environment" multiple>
+  <button type="button" id="ocrScanBtn" class="btn" style="margin-top:10px" disabled>📷 Разпознай и сверй</button>
+  <div id="ocrStatus" class="hint" style="margin-top:8px"></div>
+
+  <div id="ocrResultWrap" style="display:none;margin-top:14px">
+    <div id="ocrNotice"></div>
+    <div id="ocrBanner"></div>
+    <div id="ocrMeta" class="hint" style="margin:8px 0"></div>
+    <div id="ocrRows"></div>
+    <button type="button" id="ocrApplyBtn" class="btn dark" style="margin-top:10px">Приложи маркираните корекции</button>
+  </div>
+
+  <div id="ocrHistoryWrap" style="margin-top:16px">
+    <button type="button" id="ocrHistoryToggle" class="fold-btn no-print">История на сверяванията</button>
+    <div id="ocrHistory" style="display:none;margin-top:8px"></div>
+  </div>
 </div>
 
 <div class="card no-print">
@@ -887,7 +921,8 @@ function variantPrice(compKey, m){
 const KERF = 8;
 const MIN_OFFCUT = 300;
 const VAT = 1.20;
-let MARKUP_PCT = 75;   // редактируем: печалба + транспорт + монтаж
+const MARKUP_MIN = 90;  // препоръчителна надценка (Кирил) — само ориентир, НЕ е твърд праг
+let MARKUP_PCT = 90;   // редактируем: печалба + транспорт + монтаж
 function MK(){ return 1 + MARKUP_PCT/100; }
 let CLIENT = "firm";  // firm = гледа без ДДС, person = гледа с ДДС
 
@@ -1465,10 +1500,11 @@ document.getElementById("markup").addEventListener("input",()=>{
   MARKUP_PCT = isNaN(v)?0:v; showMkHint(); render(); livePrice();
 });
 function showMkHint(){
+  const below = MARKUP_PCT < MARKUP_MIN ? ` ⚠️ под препоръчителната надценка от ${MARKUP_MIN}%` : "";
   document.getElementById("mkHint").textContent =
-    CLIENT==="firm"
+    (CLIENT==="firm"
       ? `Надценка ${MARKUP_PCT}% · водеща цена: БЕЗ ДДС (фирма ползва данъчен кредит)`
-      : `Надценка ${MARKUP_PCT}% · водеща цена: С ДДС (крайна за частно лице)`;
+      : `Надценка ${MARKUP_PCT}% · водеща цена: С ДДС (крайна за частно лице)`) + below;
 }
 showMkHint(); bindTabs("shapeTabs","shape");
 renderCells(); autoDistribute(); renderSizes();
@@ -2561,6 +2597,362 @@ function importFromAR(){
 importFromAR();
 
 livePreview(); render();
+
+/* ===== Сверяване на цени по разписка (OCR през OpenRouter vision) =====
+   Качваш снимка на стокова разписка/фактура → изпраща се към vision модел
+   през OpenRouter API → връща структуриран списък от редове (описание,
+   количество, единична цена) → всеки ред се сравнява/съпоставя ръчно с
+   реална цена в инструмента (SYSTEMS/HW/DOOR_HW/GLASS/DECOR_CATS) →
+   потвърждаваш/коригираш → приложените корекции пренаписват цените живо
+   и остават в локална история (в браузъра на устройството). */
+
+/* --- Плосък регистър на ВСИЧКИ редактируеми цени в инструмента --- */
+function priceRegistryRoots(){ return {SYSTEMS,HW,DOOR_HW,GLASS,DECOR_CATS}; }
+function buildPriceRegistry(){
+  const reg=[];
+  Object.entries(SYSTEMS).forEach(([sk,sv])=>{
+    ["frame","sashWin","mullion","sashDoor"].forEach(comp=>{
+      if(!sv.price || typeof sv.price[comp]!=="object") return;
+      Object.entries(sv.price[comp]).forEach(([color,val])=>{
+        if(typeof val!=="number") return;
+        reg.push({path:["SYSTEMS",sk,"price",comp,color], label:`${sv.name} · ${comp} · ${color}`});
+      });
+    });
+    if(sv.price && typeof sv.price.bead==="object"){
+      Object.entries(sv.price.bead).forEach(([beadType,byColor])=>{
+        if(typeof byColor!=="object") return;
+        Object.entries(byColor).forEach(([color,val])=>{
+          if(typeof val!=="number") return;
+          reg.push({path:["SYSTEMS",sk,"price","bead",beadType,color], label:`${sv.name} · стъклодържател ${beadType} · ${color}`});
+        });
+      });
+    }
+    if(sv.reinf){
+      Object.entries(sv.reinf).forEach(([thick,o])=>{
+        if(o && typeof o.price==="number") reg.push({path:["SYSTEMS",sk,"reinf",thick,"price"], label:`${sv.name} · армировка ${thick}мм`});
+      });
+    }
+    if(sv.corner && typeof sv.corner.price==="number"){
+      reg.push({path:["SYSTEMS",sk,"corner","price"], label:`${sv.name} · алум. сглобка ъгъл`});
+    }
+    if(sv.variants){
+      Object.entries(sv.variants).forEach(([compKey,variants])=>{
+        Object.entries(variants).forEach(([vk,vv])=>{
+          if(!vv.price) return;
+          Object.entries(vv.price).forEach(([color,val])=>{
+            if(typeof val!=="number") return;
+            reg.push({path:["SYSTEMS",sk,"variants",compKey,vk,"price",color], label:`${sv.name} · вариант ${compKey}/${vk} · ${color}`});
+          });
+        });
+      });
+    }
+  });
+  Object.entries(HW).forEach(([k,v])=>{ if(typeof v.price==="number") reg.push({path:["HW",k,"price"], label:`Обков прозорец · ${v.name}`}); });
+  Object.entries(DOOR_HW).forEach(([k,v])=>{ if(typeof v.price==="number") reg.push({path:["DOOR_HW",k,"price"], label:`Обков врата · ${v.name}`}); });
+  Object.entries(GLASS).forEach(([k,v])=>{ if(typeof v.price==="number") reg.push({path:["GLASS",k,"price"], label:`Стъкло/панел · ${v.name}`}); });
+  Object.entries(DECOR_CATS).forEach(([ck,cv])=>{
+    Object.entries(cv.models).forEach(([mk,mv])=>{
+      Object.entries(mv.colors||{}).forEach(([colorKey,byThick])=>{
+        Object.entries(byThick).forEach(([thick,val])=>{
+          if(typeof val==="number") reg.push({path:["DECOR_CATS",ck,"models",mk,"colors",colorKey,thick], label:`Декор. панел ${cv.name} · ${mv.name} · ${colorKey} · ${thick}мм`});
+        });
+      });
+      if(mv.ibPrice){
+        Object.entries(mv.ibPrice).forEach(([thick,val])=>{
+          if(typeof val==="number") reg.push({path:["DECOR_CATS",ck,"models",mk,"ibPrice",thick], label:`Декор. панел ${cv.name} · ${mv.name} · INOX/BLACK · ${thick}мм`});
+        });
+      }
+    });
+  });
+  return reg;
+}
+function priceAtPath(path){
+  let node=priceRegistryRoots()[path[0]];
+  for(let i=1;i<path.length-1;i++) node=node[path[i]];
+  return node[path[path.length-1]];
+}
+function setPriceAtPath(path,val){
+  let node=priceRegistryRoots()[path[0]];
+  for(let i=1;i<path.length-1;i++) node=node[path[i]];
+  node[path[path.length-1]]=val;
+}
+const PRICE_REGISTRY = buildPriceRegistry();
+
+/* --- Настройки (API ключ / модел) — само в localStorage на устройството,
+   НИКОГА не се записват във файла или в текста на страницата. --- */
+const OCR_LS_KEY="kalibar_ocr_key", OCR_LS_MODEL="kalibar_ocr_model", OCR_LS_HIST="kalibar_ocr_history";
+/* По изрично искане на Кирил ключът е вграден директно тук (вместо да се
+   въвежда ръчно) — ключът е с лимит и е отделен, само за КАЛИБЪР (не общ
+   акаунтен ключ), затова рискът при евентуално разкриване е ограничен.
+   Все пак: всеки, който отвори файла (view-source, споделяне, качване на
+   публичен хостинг), може да види и ползва ключа до изчерпване на лимита —
+   ако файлът се качи публично (напр. на PWA-то), по-добре първо се сменя
+   с версията, при която ключът се въвежда ръчно в браузъра (localStorage). */
+const OCR_DEFAULT_KEY="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";
+function ocrGetKey(){ try{ return localStorage.getItem(OCR_LS_KEY)||OCR_DEFAULT_KEY; }catch(e){ return OCR_DEFAULT_KEY; } }
+function ocrGetModel(){ try{ return localStorage.getItem(OCR_LS_MODEL)||"anthropic/claude-3.5-sonnet"; }catch(e){ return "anthropic/claude-3.5-sonnet"; } }
+function ocrGetHistory(){ try{ return JSON.parse(localStorage.getItem(OCR_LS_HIST)||"[]"); }catch(e){ return []; } }
+function ocrSaveHistory(list){ try{ localStorage.setItem(OCR_LS_HIST, JSON.stringify(list.slice(-50))); }catch(e){} }
+
+const ocrSettingsToggle=document.getElementById("ocrSettingsToggle");
+const ocrSettingsBox=document.getElementById("ocrSettings");
+ocrSettingsToggle.addEventListener("click",()=>{
+  ocrSettingsBox.style.display = ocrSettingsBox.style.display==="none" ? "block" : "none";
+});
+document.getElementById("ocrApiKey").value = ocrGetKey();
+document.getElementById("ocrModel").value = ocrGetModel();
+document.getElementById("ocrSaveKey").addEventListener("click",()=>{
+  try{
+    localStorage.setItem(OCR_LS_KEY, document.getElementById("ocrApiKey").value.trim());
+    localStorage.setItem(OCR_LS_MODEL, document.getElementById("ocrModel").value.trim()||"anthropic/claude-3.5-sonnet");
+    document.getElementById("ocrKeyStatus").textContent="✅ запазено в браузъра";
+  }catch(e){ document.getElementById("ocrKeyStatus").textContent="⚠️ localStorage не е достъпен в този браузър."; }
+  refreshScanBtn();
+});
+
+let ocrFiles=[]; // [{name, base64, mime}, ...] — може да са няколко снимки наведнъж
+function refreshScanBtn(){
+  document.getElementById("ocrScanBtn").disabled = !(ocrFiles.length && ocrGetKey());
+}
+function readFileAsDataPart(f){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve({name:f.name, base64:reader.result.split(",")[1], mime:f.type||"image/jpeg"});
+    reader.onerror=reject;
+    reader.readAsDataURL(f);
+  });
+}
+document.getElementById("ocrFile").addEventListener("change",async(e)=>{
+  const files=Array.from(e.target.files||[]);
+  if(!files.length){ ocrFiles=[]; refreshScanBtn(); return; }
+  document.getElementById("ocrStatus").textContent=`Зареждам ${files.length} снимк${files.length===1?"а":"и"}…`;
+  try{
+    ocrFiles = await Promise.all(files.map(readFileAsDataPart));
+    document.getElementById("ocrStatus").textContent=`Готово за разпознаване: ${ocrFiles.length} снимк${ocrFiles.length===1?"а":"и"}.`;
+  }catch(err){
+    document.getElementById("ocrStatus").textContent="⚠️ Грешка при зареждане на снимките: "+err.message;
+    ocrFiles=[];
+  }
+  refreshScanBtn();
+});
+
+/* --- Лек авто-помощник за съпоставка: предлага (НЕ прилага сам) кой запис
+   от PRICE_REGISTRY най-вероятно отговаря на разпознатия ред, по текстово
+   съвпадение на думи. Винаги е само предложение — потребителят го вижда
+   маркирано и трябва сам да го провери/потвърди, преди да отбележи чекбокса
+   за прилагане. Не гадае цена — само коя позиция е кандидат. */
+function normWords(s){
+  return (s||"").toLowerCase().replace(/[.,()€%\/]/g," ").split(/\s+/).filter(w=>w.length>=3);
+}
+function suggestMatchIndex(item){
+  const qWords=new Set([...normWords(item.text), ...normWords(item.code)]);
+  if(!qWords.size) return null;
+  let best=-1, bestScore=0;
+  PRICE_REGISTRY.forEach((r,i)=>{
+    const lWords=normWords(r.label);
+    let score=0;
+    lWords.forEach(w=>{ if(qWords.has(w)) score++; });
+    if(score>bestScore){ bestScore=score; best=i; }
+  });
+  return bestScore>=1 ? best : null;
+}
+
+/* Промпт към vision модела — иска СТРОГО JSON, без обяснения, за да се парсва надеждно. */
+function ocrPrompt(){
+  return `Ти четеш снимка на стокова разписка/фактура на български език за PVC/алуминиева дограма и обков. `+
+  `Извади всеки ред от таблицата с артикули. Върни САМО валиден JSON (без markdown, без обяснения) с точно тази форма:\n`+
+  `{"supplier":"...","invoice_no":"...","date":"...","items":[{"text":"оригинален текст на реда","code":"код/артикул ако има","qty":число или null,"unit":"бр./м/кг/м² ако е видимо","unit_price":число или null,"total_price":число или null}]}\n`+
+  `Ако не можеш да прочетеш дадено поле — сложи null, не измисляй стойност. Числата — с точка за десетичен разделител, без валутен знак.`;
+}
+async function ocrCallVision(fileData){
+  const key=ocrGetKey(), model=ocrGetModel();
+  const body={
+    model,
+    messages:[{ role:"user", content:[
+      {type:"text", text: ocrPrompt()},
+      {type:"image_url", image_url:{url:`data:${fileData.mime};base64,${fileData.base64}`}}
+    ]}],
+    temperature:0
+  };
+  const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+    method:"POST",
+    headers:{ "Authorization":`Bearer ${key}`, "Content-Type":"application/json" },
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){
+    const t=await res.text().catch(()=>"");
+    throw new Error(`OpenRouter отговори ${res.status}: ${t.slice(0,300)}`);
+  }
+  const data=await res.json();
+  const raw=data?.choices?.[0]?.message?.content;
+  if(!raw) throw new Error("Празен отговор от модела.");
+  const jsonText = typeof raw==="string" ? raw : (Array.isArray(raw)? raw.map(p=>p.text||"").join("") : "");
+  const match = jsonText.match(/\{[\s\S]*\}/);
+  if(!match) throw new Error("Отговорът не съдържа разпознаваем JSON:\n"+jsonText.slice(0,300));
+  return JSON.parse(match[0]);
+}
+
+let ocrLastResult=null; // {items:[{...extracted, matchPath, suggested, applyChecked}], docs:[{supplier,invoice_no,date,file}]}
+document.getElementById("ocrScanBtn").addEventListener("click", async ()=>{
+  const statusEl=document.getElementById("ocrStatus");
+  if(!ocrFiles.length){ statusEl.textContent="⚠️ Първо избери/снимай поне една разписка."; return; }
+  if(!ocrGetKey()){ statusEl.textContent="⚠️ Въведи API ключ в настройките горе."; return; }
+  document.getElementById("ocrScanBtn").disabled=true;
+  const allItems=[], docs=[], failures=[];
+  for(let i=0;i<ocrFiles.length;i++){
+    const f=ocrFiles[i];
+    statusEl.textContent=`⏳ Разпознавам снимка ${i+1} от ${ocrFiles.length} (${f.name})… (изисква интернет)`;
+    try{
+      const parsed = await ocrCallVision(f);
+      docs.push({ supplier:parsed.supplier||"", invoice_no:parsed.invoice_no||"", date:parsed.date||"", file:f.name });
+      (parsed.items||[]).forEach(it=>{
+        const suggestion = suggestMatchIndex(it);
+        allItems.push({
+          ...it,
+          sourceFile: f.name,
+          matchPath: suggestion!=null ? PRICE_REGISTRY[suggestion].path : null,
+          suggested: suggestion!=null,
+          applyChecked:false,
+        });
+      });
+    }catch(err){
+      failures.push(`${f.name}: ${err.message}`);
+    }
+  }
+  ocrLastResult = { docs, items:allItems, scannedAt:new Date().toISOString() };
+  renderOcrResults();
+  const okCount=ocrFiles.length-failures.length;
+  statusEl.textContent = failures.length
+    ? `✅ Разпознати ${okCount}/${ocrFiles.length} снимки, ${allItems.length} реда. ⚠️ Грешки: ${failures.join(" · ")}`
+    : `✅ Разпознати ${allItems.length} реда от ${ocrFiles.length} снимк${ocrFiles.length===1?"а":"и"}. Провери предложените съответствия долу.`;
+  refreshScanBtn();
+});
+
+/* За ред: намира текущата цена (ако има съпоставка) и разликата спрямо
+   цената от разписката — връща и html за показване, и суровата delta. */
+function ocrRowCompare(it){
+  const cur = it.matchPath ? priceAtPath(it.matchPath) : null;
+  const delta = (cur!=null && it.unit_price!=null) ? (it.unit_price-cur) : null;
+  const html = delta==null ? "" :
+    (delta>0 ? `<span style="color:#c0392b;font-weight:700">+${delta.toFixed(2)}€ поскъпване</span>` :
+     delta<0 ? `<span style="color:#1a7a3c;font-weight:700">${delta.toFixed(2)}€ поевтиняване</span>` :
+     `<span style="color:#888">без промяна</span>`);
+  return {cur, delta, html};
+}
+function renderOcrResults(){
+  const wrap=document.getElementById("ocrResultWrap");
+  if(!ocrLastResult || !ocrLastResult.items.length){ wrap.style.display="none"; return; }
+  wrap.style.display="block";
+  document.getElementById("ocrMeta").innerHTML = ocrLastResult.docs.map(d=>
+    `📄 ${d.file}: ${d.supplier||"—"} · №${d.invoice_no||"—"} · ${d.date||"—"}`).join("<br>");
+
+  /* Известие с обобщение на откритите разлики — показва се веднага, преди да е
+     приложена каквато и да е корекция, и предлага бърз начин да се маркират
+     всички открити промени за преглед/прилагане наведнъж. */
+  let diffCount=0, upCount=0, downCount=0;
+  ocrLastResult.items.forEach(it=>{ const {delta}=ocrRowCompare(it); if(delta!=null && delta!==0){ diffCount++; if(delta>0) upCount++; else downCount++; } });
+  const noticeEl=document.getElementById("ocrNotice");
+  if(diffCount>0){
+    noticeEl.innerHTML = `<div class="warn">🔔 Открити ${diffCount} разлики в цените спрямо инструмента (${upCount} поскъпнали, ${downCount} поевтинели) от общо ${ocrLastResult.items.length} разпознати реда.
+      Съпоставките по-долу със значка „⚠️ предложено" са автоматично предложени — провери ги, преди да ги приложиш.<br>
+      <button type="button" id="ocrMarkAllBtn" class="btn small dark" style="margin-top:8px;width:auto">Маркирай всички открити разлики за преглед</button></div>`;
+    document.getElementById("ocrMarkAllBtn").addEventListener("click",()=>{
+      ocrLastResult.items.forEach(it=>{ const {delta}=ocrRowCompare(it); if(delta!=null && delta!==0) it.applyChecked=true; });
+      renderOcrResults();
+    });
+  } else {
+    noticeEl.innerHTML = ocrLastResult.items.some(it=>it.matchPath)
+      ? `<div class="hint" style="color:#1a7a3c">✅ Няма открити разлики в съпоставените редове.</div>` : "";
+  }
+
+  const rowsEl=document.getElementById("ocrRows");
+  const options = PRICE_REGISTRY.map((r,i)=>`<option value="${i}">${r.label}</option>`).join("");
+  rowsEl.innerHTML = ocrLastResult.items.map((it,idx)=>{
+    const {cur,html:deltaHtml} = ocrRowCompare(it);
+    const selIdx = it.matchPath ? PRICE_REGISTRY.findIndex(r=>r.path.join("|")===it.matchPath.join("|")) : -1;
+    const optsWithSel = PRICE_REGISTRY.map((r,i)=>`<option value="${i}"${i===selIdx?" selected":""}>${r.label}</option>`).join("");
+    return `<div style="border:1px solid #eee;border-radius:8px;padding:10px;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600">${it.text||"(без текст)"} <span class="hint">· ${it.sourceFile||""}</span></div>
+      <div class="hint">код: ${it.code||"—"} · кол-во: ${it.qty??"—"} ${it.unit||""} · ед. цена от разписката: ${it.unit_price!=null?it.unit_price.toFixed(2)+"€":"—"}</div>
+      <label style="margin-top:6px">Съответства на позиция в инструмента ${it.suggested?'<span style="color:#8a5a00;font-weight:700">⚠️ предложено — провери</span>':""}</label>
+      <select data-ocridx="${idx}" class="ocr-match">
+        <option value="">— избери —</option>
+        ${optsWithSel}
+      </select>
+      <div class="hint" style="margin-top:4px" id="ocrCmp${idx}">${cur!=null?`Текуща цена в инструмента: <b>${cur.toFixed(2)}€</b> ${deltaHtml}`:""}</div>
+      <label style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:13px;color:#333">
+        <input type="checkbox" data-ocrcheck="${idx}" style="width:auto" ${it.applyChecked?"checked":""}> Приложи тази корекция
+      </label>
+    </div>`;
+  }).join("");
+  rowsEl.querySelectorAll(".ocr-match").forEach(sel=>sel.addEventListener("change",()=>{
+    const idx=+sel.dataset.ocridx;
+    const regIdx = sel.value===""? null : +sel.value;
+    ocrLastResult.items[idx].matchPath = regIdx==null ? null : PRICE_REGISTRY[regIdx].path;
+    ocrLastResult.items[idx].suggested = false; // ръчно избран/потвърден от потребителя
+    const it=ocrLastResult.items[idx];
+    const {cur,html:deltaHtml} = ocrRowCompare(it);
+    document.getElementById(`ocrCmp${idx}`).innerHTML = cur!=null?`Текуща цена в инструмента: <b>${cur.toFixed(2)}€</b> ${deltaHtml}`:"";
+  }));
+  rowsEl.querySelectorAll("[data-ocrcheck]").forEach(cb=>cb.addEventListener("change",()=>{
+    ocrLastResult.items[+cb.dataset.ocrcheck].applyChecked = cb.checked;
+  }));
+}
+
+document.getElementById("ocrApplyBtn").addEventListener("click",()=>{
+  if(!ocrLastResult) return;
+  let applied=0, increases=0, increaseTotal=0;
+  const applyLog=[];
+  ocrLastResult.items.forEach(it=>{
+    if(!it.applyChecked || !it.matchPath || it.unit_price==null) return;
+    const before = priceAtPath(it.matchPath);
+    setPriceAtPath(it.matchPath, it.unit_price);
+    applied++;
+    if(it.unit_price>before){ increases++; increaseTotal += (it.unit_price-before); }
+    applyLog.push({ label: PRICE_REGISTRY.find(r=>r.path.join("|")===it.matchPath.join("|"))?.label || it.matchPath.join("/"),
+      before, after: it.unit_price, text: it.text });
+  });
+  const banner=document.getElementById("ocrBanner");
+  if(applied===0){
+    banner.innerHTML = `<div class="warn">Няма маркирани редове за прилагане — отбележи чекбокс поне на един ред със съпоставена позиция.</div>`;
+  } else {
+    banner.innerHTML = increases>0
+      ? `<div class="warn">⚠️ Приложени ${applied} цени. ${increases} артикула поскъпнаха с общо ${increaseTotal.toFixed(2)}€/ед.</div>`
+      : `<div class="hint" style="color:#1a7a3c">✅ Приложени ${applied} цени, без поскъпване.</div>`;
+    // История
+    const hist=ocrGetHistory();
+    const supplierLabel = ocrLastResult.docs.map(d=>d.supplier).filter(Boolean).join(", ") || "—";
+    const invoiceLabel = ocrLastResult.docs.map(d=>d.invoice_no).filter(Boolean).join(", ") || "";
+    hist.push({ date:new Date().toISOString(), supplier:supplierLabel, invoice_no:invoiceLabel, items:applyLog });
+    ocrSaveHistory(hist);
+    renderOcrHistory();
+    showSysHint(); showHint(); livePrice(); render();
+  }
+});
+
+function renderOcrHistory(){
+  const el=document.getElementById("ocrHistory");
+  const hist=ocrGetHistory();
+  if(!hist.length){ el.innerHTML='<div class="empty">Все още няма сверявания.</div>'; return; }
+  el.innerHTML = hist.slice().reverse().map(h=>{
+    const d=new Date(h.date);
+    const rows=h.items.map(it=>{
+      const up = it.after>it.before;
+      return `<div style="font-size:12px;padding:3px 0">${it.label}: ${it.before.toFixed(2)}€ → <b style="color:${up?'#c0392b':'#1a7a3c'}">${it.after.toFixed(2)}€</b></div>`;
+    }).join("");
+    return `<div style="border-bottom:1px solid #eee;padding:8px 0">
+      <div style="font-size:12.5px;font-weight:700">${d.toLocaleDateString("bg-BG")} · ${h.supplier||"—"} ${h.invoice_no?("· №"+h.invoice_no):""}</div>
+      ${rows}
+    </div>`;
+  }).join("");
+}
+document.getElementById("ocrHistoryToggle").addEventListener("click",()=>{
+  const el=document.getElementById("ocrHistory");
+  const show = el.style.display==="none";
+  el.style.display = show ? "block" : "none";
+  if(show) renderOcrHistory();
+});
+refreshScanBtn();
 
 /* PWA: работи само от HTTPS (или localhost), не от file://. */
 let installPrompt;
