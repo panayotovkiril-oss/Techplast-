@@ -72,6 +72,11 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
 .cut-sub{font-size:10.5px;color:#aaa;margin-bottom:6px}
 .hint{font-size:11.5px;color:#999;margin-top:6px;line-height:1.45}
 .warn{font-size:12px;color:#8a5a00;background:#fff8e1;border:1px solid #ffe9a8;padding:9px 11px;border-radius:7px;margin-top:9px;line-height:1.45}
+.sys-status-badge{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge-item{font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;white-space:nowrap}
+.badge-verified{color:#1a7a3c;background:#e6f7ec;border:1px solid #b8e6c8}
+.badge-estimated{color:#8a5a00;background:#fff3d6;border:1px solid #ffdb8a}
+.badge-unknown{color:#a02020;background:#fde8e8;border:1px solid #f5b8b8}
 .empty{text-align:center;color:#bbb;padding:22px;font-size:14px}
 .glass-list{font-size:12px;color:#777;margin-top:4px;line-height:1.5}
 .live-price{margin-top:10px;border-radius:12px;background:linear-gradient(135deg,#111827,#1f2937);color:#fff;padding:14px 16px;display:none}
@@ -104,6 +109,9 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
   border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.12);color:inherit;cursor:pointer}
 .cell.t-fix .split-btn{border-color:#d7dee8;background:#fff;color:#64748b}
 .split-btn:hover{background:rgba(255,255,255,.24)}
+.fill-btn{margin-top:4px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.12);color:inherit;cursor:pointer}
+.fill-btn:hover{background:rgba(255,255,255,.24)}
 .cell-split{border:2px dashed #999;border-radius:7px;padding:6px;background:#f3f1ea}
 .cell-split-head{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:5px;font-size:10px;color:#555}
 .cell-split-head .cnt-btn{font-size:10px;padding:1px 5px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer}
@@ -367,11 +375,13 @@ body.compact .mod-head{margin-bottom:2px}
 
 <div class="card no-print" id="decorCard" style="display:none">
   <h2>Декоративен панел за врата <span style="text-transform:none;letter-spacing:0;font-weight:400;color:#bbb">— незадължително</span></h2>
+  <div class="hint" style="margin-bottom:8px">Пълнежът на ВСЯКА врата — стъкло / комбинирано (стъкло горе + панел долу) / изцяло панел — се избира индивидуално с клик върху квадратчето на вратата в скицата долу. Тук задаваш само модела на панела и височината на разделителя, плюс бърза настройка за всички врати наведнъж.</div>
   <div class="tabs" id="decorToggle">
-    <div class="tab active" data-decor="0">Без — стандартно остъкляване</div>
-    <div class="tab" data-decor="1">С декоративен панел</div>
+    <div class="tab" data-decor="glass">Всички врати → стъкло</div>
+    <div class="tab" data-decor="split">Всички врати → комбинирано</div>
+    <div class="tab" data-decor="panel">Всички врати → панел</div>
   </div>
-  <div id="decorFields" style="display:none">
+  <div id="decorFields">
     <label style="margin-top:10px">Серия</label>
     <select id="decorCat"></select>
     <label style="margin-top:8px">Модел</label>
@@ -387,6 +397,9 @@ body.compact .mod-head{margin-bottom:2px}
       <div class="tab" data-dt="44">44мм (+30€)</div>
     </div>
     <div class="hint" id="decorHint"></div>
+    <label style="margin-top:8px">Височина на панела при комбинирано пълнене, мм (от долния ръб на вратата)</label>
+    <input type="number" id="doorSplitH" value="400">
+    <div class="warn" style="margin-top:8px">⚠️ Напречникът (импостът), който разделя стъклото от панела вътре в крилото на вратата, временно се смята с разреза и приспадането на делителя (mullion) — не е потвърден като отделен профил от производството.</div>
   </div>
 </div>
 
@@ -719,6 +732,7 @@ const SYSTEMS = {
   /* ─── PVC ─────────────────────────────────────────────── */
   wp3000: {
     name:"PVC Essential WP3000 · 3-камерна · каса 60мм", kind:"pvc", confirmed:false,
+    status:{geometry:"estimated", price:"estimated"},
     note:"⚠️ НЯМА ценоразпис и НЯМА сверени формули за WP3000. Официално: 3-камерна, каса 60мм, крило 60мм, стъклопакет до 32мм, Uw 1.0, 39 dB. Приспаданията долу са взаимствани от WP4000 (същата 60мм каса) — по-близко от WP5000, но НЕ потвърдено.",
     maxGlass:32, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
@@ -732,6 +746,7 @@ const SYSTEMS = {
 
   wp4000: {
     name:"PVC Smart WP4000 · 4-камерна · каса 60мм", kind:"pvc", confirmed:false,
+    status:{geometry:"verified", price:"estimated"},
     note:"✅ ФОРМУЛИТЕ са от официалния технически каталог на Weiss (светъл отвор = каса−86, крило = каса−70, делител = каса−86, стъкло = крило−124). ⚠️ ЦЕНИТЕ обаче са взаимствани от WP5000 — нямаме ценоразпис за WP4000.",
     maxGlass:32, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
@@ -745,6 +760,7 @@ const SYSTEMS = {
 
   wp5000: {
     name:"PVC Energy WP5000 · 5-камерна · каса 72мм", kind:"pvc", confirmed:true,
+    status:{geometry:"verified", price:"verified"},
     note:"Официален ценоразпис Weiss + геометрия, сверена с ръчните сметки на производството.",
     maxGlass:40, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
@@ -777,6 +793,7 @@ const SYSTEMS = {
 
   wp82: {
     name:"PVC Avangard WP82 · 7-камерна · каса 82мм", kind:"pvc", confirmed:false,
+    status:{geometry:"estimated", price:"estimated"},
     note:"⚠️ НЯМА ценоразпис и НЯМА сверени формули. Официално: 7-камерна, каса 82мм, крило 82/92мм, стъклопакет до 44мм. Приспаданията долу са взаимствани от WP5000 и почти сигурно са грешни за 82мм каса.",
     maxGlass:44, bar:{profile:6500,bead:6000,metal:6000},
     ded:{sashSub:92, sashAdd:22, glass:100, glassSash:193, glassGap:10, bead:92, reinf:100, mullion:92,
@@ -791,8 +808,9 @@ const SYSTEMS = {
   /* ─── АЛУМИНИЙ ─────────────────────────────────────────── */
   alu_cold: {
     name:"Алуминий СТУДЕН · Lightech WP40 · каса 37/40мм", kind:"alu", confirmed:true,
+    status:{geometry:"estimated", price:"verified"},
     corner:{price:1.6667, confirmed:true, note:"сглобка/монтичели, 2€/ъгъл с ДДС — потвърдена"},
-    note:"✅ Каса/крило/делител изведени от реален грамаж на профила (WP40.02/21/24/31, г/м от снимки на техническия каталог) × потвърдени €/кг (бяло 6.30 / цветно 7.80). Стъклодържател коригиран от 1.20 на 1.827€/лм (WP40.20, 20мм вариант — единственото, което побира студеният алуминий). ⚠️ extfoil/intfoil остават интерполирани (нямаме отделна едностранна €/кг ставка за алуминий). Приема САМО 20мм стъклопакет или единично 4мм стъкло — НЕ побира 24мм пакетите от ГЛАСКО.",
+    note:"✅ Каса/крило/делител изведени от реален грамаж на профила (WP40.02/21/24/31, г/м от снимки на техническия каталог) × потвърдени €/кг (бяло 6.30 / цветно 7.80). Стъклодържател коригиран от 1.20 на 1.827€/лм (WP40.20, 20мм вариант — единственото, което побира студеният алуминий). ⚠️ extfoil/intfoil остават интерполирани (нямаме отделна едностранна €/кг ставка за алуминий). Приема САМО 20мм стъклопакет или единично 4мм стъкло — НЕ побира 24мм пакетите от ГЛАСКО. ⚠️ ГЕОМЕТРИЯ (приспаданията долу — sashSub/mulSide/weld и т.н.) е ВСЕ ОЩЕ generic PVC-стил стойност, НЕ е извадена от собствените сечения на WP40 каталога — само цената е потвърдена, разкроят не е.",
     maxGlass:20, bar:{profile:6000,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
           frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
@@ -805,8 +823,9 @@ const SYSTEMS = {
 
   alu_thermo: {
     name:"Алуминий ТОПЪЛ · Thermo Smart WP78 · каса 70 / крило 78мм", kind:"alu", confirmed:true,
+    status:{geometry:"estimated", price:"verified"},
     corner:{price:1.6667, confirmed:true, note:"сглобка/монтичели, 2€/ъгъл с ДДС — потвърдена"},
-    note:"✅ Каса/крило/крило-врата/делител изведени от реален грамаж на профила (WP78.01/21/25/33, г/м от снимки на техническия каталог, 21.09.2026) × потвърдени €/кг (термо бяло 8.05 / термо цветно 9.55). Избрани стандартните/базови кодове по инженерна преценка (WP78.01 базова каса — не WP78.02 голяма или WP78.05 с борд за реновация; WP78.25 врата навътре — не WP78.27 навън; WP78.33 стандартен делител — не WP78.35 вариант до крило) — не е потвърдено с фактура кой код TechPlast реално поръчва. ⚠️ Стъклодържател (bead) остава стара ОЦЕНКА — каталожните тегла за bead кодовете бяха нечетливи от снимката (сянка върху страницата).",
+    note:"✅ Каса/крило/крило-врата/делител изведени от реален грамаж на профила (WP78.01/21/25/33, г/м от снимки на техническия каталог, 21.09.2026) × потвърдени €/кг (термо бяло 8.05 / термо цветно 9.55). Избрани стандартните/базови кодове по инженерна преценка (WP78.01 базова каса — не WP78.02 голяма или WP78.05 с борд за реновация; WP78.25 врата навътре — не WP78.27 навън; WP78.33 стандартен делител — не WP78.35 вариант до крило) — не е потвърдено с фактура кой код TechPlast реално поръчва. ⚠️ Стъклодържател (bead) остава стара ОЦЕНКА — каталожните тегла за bead кодовете бяха нечетливи от снимката (сянка върху страницата). ⚠️ ГЕОМЕТРИЯ (приспаданията долу) е ВСЕ ОЩЕ generic PVC-стил стойност, НЕ е извадена от собствените сечения на WP78 каталога — само цената е потвърдена, разкроят не е.",
     maxGlass:50, bar:{profile:6000,bead:6000,metal:6000},
     ded:{sashSub:86, sashAdd:16, glass:100, glassSash:194, glassGap:10, bead:92, reinf:100, mullion:86,
           frameSide:46, mulSide:20, weld:21, glassFixSide:50, glassMulSide:30, beadSide:46, beadMulSide:19.5, reinfSide:50, reinfMulSide:23.5},
@@ -990,6 +1009,23 @@ function flattenTopCells(m){
 }
 
 let ui = { std:"s1", cols:1, rows:1, thr:false, cells:[["fix"]], shape:"rect", colW:[], rowH:[], reinf:"1.2", color:"white", hinge:[], span:[[{rowSpan:1,colSpan:1}]] };
+/* Пълнеж на всяка отделна врата: "glass" (стандартно) | "split" (стъкло горе + панел долу,
+   разделени с напречник) | "panel" (изцяло декоративен панел). Ключувано по pathToStr(path),
+   за да работи независимо колко врати има елементът и къде са вложени. */
+ui.doorFill = {};
+ui.doorSplitH = 400;
+function doorFillAt(path){ return ui.doorFill[pathToStr(path)] || "glass"; }
+function setDoorFillAt(path,val){ ui.doorFill[pathToStr(path)] = val; }
+function allDoorPaths(cells, prefix){
+  prefix = prefix || [];
+  const out=[];
+  cells.forEach((row,r)=>row.forEach((cell,c)=>{
+    const path=[...prefix,[r,c]];
+    if(isSplit(cell)) out.push(...allDoorPaths(cell.cells, path));
+    else if(cell==="door") out.push(path);
+  }));
+  return out;
+}
 const DOOR_W = 900, DOOR_H = 2100;  // типични размери за врата — начално предложение
 let modules = [];
 
@@ -1032,9 +1068,17 @@ function updatePanelColorUI(g){
   }
 }
 
+/* Статус на система: VERIFIED (може за производство) / ESTIMATED (взаимствано — само ориентировъчна оферта) / UNKNOWN (нищо) */
+const STATUS_LABEL = { verified:"✅ ПОТВЪРДЕНО", estimated:"⚠️ ВЗАИМСТВАНО/ОЦЕНКА", unknown:"❌ НЕПОЗНАТО" };
+function sysStatus(s){ return s.status || { geometry: s.confirmed?"verified":"estimated", price: s.confirmed?"verified":"estimated" }; }
+function sysWorstStatus(s){
+  const st=sysStatus(s); const order={verified:0, estimated:1, unknown:2};
+  return order[st.geometry]>=order[st.price] ? st.geometry : st.price;
+}
+
 const sysSel=document.getElementById("sysSel");
 sysSel.innerHTML=Object.entries(SYSTEMS).map(([k,v])=>
-  `<option value="${k}">${v.confirmed?"":"⚠️ "}${v.name}</option>`).join("");
+  `<option value="${k}">${sysWorstStatus(v)==="verified"?"":"⚠️ "}${v.name}</option>`).join("");
 sysSel.addEventListener("change",()=>{ SYS=sysSel.value; ui.mullionType="std"; ui.sashType="std";
   ui.cells=ui.cells.map(row=>row.map(()=>"fix")); // предпазна мярка: не пренасяй тип секция между различни системи
   showSysHint(); showHint(); showReinfHint(); showGlassWarn(); renderVariantPanel(); render(); livePreview(); livePrice(); });
@@ -1044,7 +1088,13 @@ function showSysHint(){
   document.getElementById("sysHint").textContent =
     `Каса ${s.price.frame.white.toFixed(2)}€/лм · крило ${s.price.sashWin.white.toFixed(2)}€/лм · делител ${s.price.mullion.white.toFixed(2)}€/лм (бяло) · прът ${s.bar.profile/1000}м · макс. стъкло ${s.maxGlass}мм`;
   const w=document.getElementById("sysWarn");
-  w.innerHTML = s.confirmed ? "" : `<div class="warn">${s.note}</div>`;
+  const st=sysStatus(s);
+  const badge = `<div class="sys-status-badge">
+      <span class="badge-item badge-${st.geometry}">Разкрой (геометрия): ${STATUS_LABEL[st.geometry]}</span>
+      <span class="badge-item badge-${st.price}">Цена: ${STATUS_LABEL[st.price]}</span>
+    </div>`;
+  const noteBox = (st.geometry==="verified" && st.price==="verified") ? "" : `<div class="warn">${s.note}</div>`;
+  w.innerHTML = badge + noteBox;
 }
 showSysHint();
 showColorHint();
@@ -1248,7 +1298,9 @@ function renderCellNode(cellData, path, W, H){
   const flip = t.key==="fix" ? "" :
     `<button class="hinge-btn" data-hingepath="${pathToStr(path)}" title="Обърни пантата">${hg==="left"?"◀ панта":"панта ▶"}</button>`;
   const splitBtn = `<button class="split-btn" data-splitpath="${pathToStr(path)}" data-splitop="tosplit" title="Раздели тази клетка на собствена под-решетка, независима от съседните">⊞ раздели</button>`;
-  return `<div class="cell ${t.cls}" data-cellpath="${pathToStr(path)}" data-w="${W}" data-h="${H}"><span class="ic">${t.ic}</span>${t.label}${flip}${splitBtn}</div>`;
+  const FILL_LABEL = {glass:"⬜ стъкло", split:"◪ комбинирано", panel:"⬛ панел"};
+  const fillBtn = t.key==="door" ? `<button class="fill-btn" data-fillpath="${pathToStr(path)}" title="Пълнеж на вратата: стъкло / комбинирано (стъкло+панел) / панел — кликни за смяна">${FILL_LABEL[doorFillAt(path)]}</button>` : "";
+  return `<div class="cell ${t.cls}" data-cellpath="${pathToStr(path)}" data-w="${W}" data-h="${H}"><span class="ic">${t.ic}</span>${t.label}${flip}${splitBtn}${fillBtn}</div>`;
 }
 function renderCells(){
   ensureHinge(); ensureSpan();
@@ -1331,8 +1383,16 @@ function bindCellNodeEvents(el){
     box.querySelectorAll('input[data-szdim="row"]').forEach(i=>i.classList.toggle("sz-bad",!okH));
     livePreview();
   }));
+  el.querySelectorAll(".fill-btn").forEach(btn=>btn.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const path=strToPath(btn.dataset.fillpath);
+    const ORDER=["glass","split","panel"];
+    const next=ORDER[(ORDER.indexOf(doorFillAt(path))+1)%ORDER.length];
+    setDoorFillAt(path,next);
+    renderCells(); livePreview();
+  }));
   el.querySelectorAll(".cell").forEach(cell=>cell.addEventListener("click",(ev)=>{
-    if(ev.target.closest(".hinge-btn")||ev.target.closest(".split-btn")) return;
+    if(ev.target.closest(".hinge-btn")||ev.target.closest(".split-btn")||ev.target.closest(".fill-btn")) return;
     const path=strToPath(cell.dataset.cellpath);
     const {cells}=containerAtPath(ui.cells, ui.hinge, path);
     const last=path[path.length-1];
@@ -1414,7 +1474,6 @@ showMkHint(); bindTabs("shapeTabs","shape");
 renderCells(); autoDistribute(); renderSizes();
 
 /* ===== Декоративен панел за врата ===== */
-ui.decor = { on:false };
 const decorCatSel=document.getElementById("decorCat");
 decorCatSel.innerHTML=Object.entries(DECOR_CATS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
 function updateDecorModels(){
@@ -1455,24 +1514,24 @@ document.querySelectorAll("#decorThickTabs .tab").forEach(t=>t.addEventListener(
   document.querySelectorAll("#decorThickTabs .tab").forEach(x=>x.classList.remove("active"));
   t.classList.add("active"); showDecorHint(); livePreview();
 }));
+/* Бутоните "Всички врати → ..." са само бърза групова настройка — прилагат избрания
+   пълнеж на ВСИЧКИ врати в текущата решетка наведнъж. Индивидуалният избор по врата
+   се прави с клик върху самата врата в скицата (виж fill-btn / hit-fill). */
 document.querySelectorAll("#decorToggle .tab").forEach(t=>t.addEventListener("click",()=>{
-  document.querySelectorAll("#decorToggle .tab").forEach(x=>x.classList.remove("active"));
-  t.classList.add("active"); ui.decor.on = t.dataset.decor==="1";
-  document.getElementById("decorFields").style.display = ui.decor.on ? "block" : "none";
-  livePreview();
+  const mode=t.dataset.decor;
+  allDoorPaths(ui.cells).forEach(p=>setDoorFillAt(p,mode));
+  renderCells(); livePreview();
 }));
+document.getElementById("doorSplitH").addEventListener("input",e=>{
+  ui.doorSplitH = parseFloat(e.target.value)||400; livePreview();
+});
 updateDecorModels();
 /* Картата се вижда само ако текущата решетка съдържа поне една врата */
 function updateDecorCardVisibility(){
   const hasDoor = ui.cells.some(row=>row.some(cellHasDoor));
   document.getElementById("decorCard").style.display = hasDoor ? "block" : "none";
-  if(!hasDoor && ui.decor.on){
-    ui.decor.on=false;
-    document.querySelector('#decorToggle [data-decor="0"]').click();
-  }
 }
 function currentDecorSelection(){
-  if(!ui.decor.on) return null;
   const colTab=document.querySelector("#decorColorTabs .tab.active");
   if(!colTab) return null;
   const isIB=colTab.dataset.dc==="__IB__";
@@ -1508,11 +1567,11 @@ function mergeGeo(o,res){
    под-решетка (обект {split:true,...}), рекурсивно. W,H,sides са РЕАЛНИТЕ
    мм размери и „каса ли е или делител" за всяка от 4-те страни НА ТАЗИ
    клетка — независимо дали клетката е горно-ниво или вложена. */
-function processCell(cellData, W, H, sides, m, atBottomEdge){
-  if(isSplit(cellData)) return processSplitCell(cellData, W, H, sides, m, atBottomEdge);
-  return processLeaf(cellData, W, H, sides, m, atBottomEdge);
+function processCell(cellData, W, H, sides, m, atBottomEdge, path){
+  if(isSplit(cellData)) return processSplitCell(cellData, W, H, sides, m, atBottomEdge, path);
+  return processLeaf(cellData, W, H, sides, m, atBottomEdge, path);
 }
-function processSplitCell(sub, W, H, sides, m, atBottomEdge){
+function processSplitCell(sub, W, H, sides, m, atBottomEdge, path){
   const o=emptyGeo();
   const D=S(m.sys).ded;
   const nc=sub.cols, nr=sub.rows;
@@ -1537,11 +1596,11 @@ function processSplitCell(sub, W, H, sides, m, atBottomEdge){
       bottom:r===nr-1    ? sides.bottom: false,
     };
     const childBottom = atBottomEdge && (r===nr-1);
-    mergeGeo(o, processCell(sub.cells[r][c], w, h, childSides, m, childBottom));
+    mergeGeo(o, processCell(sub.cells[r][c], w, h, childSides, m, childBottom, path?[...path,[r,c]]:null));
   }
   return o;
 }
-function processLeaf(cellKey, share, shareH, sides, m, isBottom){
+function processLeaf(cellKey, share, shareH, sides, m, isBottom, path){
   const o=emptyGeo();
   const type=CT[cellKey];
   const D=S(m.sys).ded;
@@ -1580,20 +1639,49 @@ function processLeaf(cellKey, share, shareH, sides, m, isBottom){
     const вКрило = (D.glassSash||193) - (2*D.frameSide - D.weld);
     const хлаб = D.glassGap||10;
     const openW = sw-вКрило-хлаб, openH = sh-вКрило-хлаб;
-    if(type.door && m.decorPanel && m.decorPanel.cat){
+    const pathKey = path ? pathToStr(path) : null;
+    const fill = (type.door && pathKey && m.doorFill && m.doorFill[pathKey]) || "glass";
+    if(type.door && fill!=="glass" && m.decorPanel && m.decorPanel.cat){
       /* Декоративен панел за врата — ФИКСИРАНА цена, не по площ. Проверяваме дали
-         реалният светъл отвор на крилото се вписва в границите на избрания модел. */
+         реалният светъл отвор (или частта от него в комбинирано пълнене) се вписва
+         в границите на избрания модел. */
       const dp=m.decorPanel;
       const lim=decorPanelLimits(dp.cat, dp.model);
       const price=decorPanelPrice(dp.cat, dp.model, dp.color, dp.thickness, dp.isIB);
-      if(!lim || price==null){
-        o.problems.push(`Декоративен панел: невалиден избор на модел/цвят/дебелина.`);
-      } else if(openW>lim.maxW || openH>lim.maxH){
-        o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм надвишава максималния размер на панела ${lim.maxW}×${lim.maxH}мм.`);
-      } else if(openW<lim.minW || openH<lim.minH){
-        o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм е под минималния за панела ${lim.minW}×${lim.minH}мм.`);
+      if(fill==="panel"){
+        if(!lim || price==null){
+          o.problems.push(`Декоративен панел: невалиден избор на модел/цвят/дебелина.`);
+        } else if(openW>lim.maxW || openH>lim.maxH){
+          o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм надвишава максималния размер на панела ${lim.maxW}×${lim.maxH}мм.`);
+        } else if(openW<lim.minW || openH<lim.minH){
+          o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм е под минималния за панела ${lim.minW}×${lim.minH}мм.`);
+        } else {
+          o.decorPanels.push({ model:dp.model, cat:dp.cat, price, openW:Math.round(openW), openH:Math.round(openH) });
+        }
       } else {
-        o.decorPanels.push({ model:dp.model, cat:dp.cat, price, openW:Math.round(openW), openH:Math.round(openH) });
+        /* fill==="split": стъкло горе + декоративен панел долу, разделени от
+           напречник в крилото. ⚠️ Напречникът временно се смята с разреза и
+           приспадането на делителя (D.mullion) — заимствано, не потвърдено от
+           производството като собствен профил за тази цел (виж бележката в
+           картата "Декоративен панел за врата"). */
+        const IMPOST_DED = D.mullion;
+        const panelH = Math.min(Math.max(m.doorSplitH||400, 50), openH-100);
+        const glassH = openH - panelH - IMPOST_DED;
+        if(glassH<=50){
+          o.problems.push(`Врата (комбинирано пълнене): панел ${Math.round(panelH)}мм не се събира в светлия отвор ${Math.round(openH)}мм на крилото.`);
+        } else {
+          o.glass.push({w:openW, h:glassH, n:1});
+          o.mullion.push(pc(openW, "90/90"));
+          if(!lim || price==null){
+            o.problems.push(`Декоративен панел: невалиден избор на модел/цвят/дебелина.`);
+          } else if(openW>lim.maxW || panelH>lim.maxH){
+            o.problems.push(`Декоративен панел ${dp.model}: долната част ${Math.round(openW)}×${Math.round(panelH)}мм надвишава максималния размер на панела ${lim.maxW}×${lim.maxH}мм.`);
+          } else if(openW<lim.minW || panelH<lim.minH){
+            o.problems.push(`Декоративен панел ${dp.model}: долната част ${Math.round(openW)}×${Math.round(panelH)}мм е под минималния за панела ${lim.minW}×${lim.minH}мм.`);
+          } else {
+            o.decorPanels.push({ model:dp.model, cat:dp.cat, price, openW:Math.round(openW), openH:Math.round(panelH) });
+          }
+        }
       }
     } else {
       o.glass.push({w:openW, h:openH, n:1});
@@ -1673,7 +1761,7 @@ function geometry(m){
       return o;
     }
     const sides = { left:(c===0), right:(c+sp.colSpan===nc), top:(r===0), bottom:(r+sp.rowSpan===nr) };
-    mergeGeo(o, processCell(cellData, share, shareH, sides, m, r+sp.rowSpan===nr));
+    mergeGeo(o, processCell(cellData, share, shareH, sides, m, r+sp.rowSpan===nr, [[r,c]]));
   }
   o.glass.forEach(g=>{ if(g.w<=0||g.h<=0)
     o.problems.push(`Стъкло ${Math.round(g.w)}×${Math.round(g.h)}мм — секцията е твърде малка.`); });
@@ -1780,7 +1868,7 @@ function sketchSVG(m, live){
   /* Рекурсивно рисува клетка (плосък тип ИЛИ вложена под-решетка) в правоъгълника
      x,y,cw,ch. hitBuf — акумулатор за интерактивния слой (само при live). */
   const hitBuf=[];
-  function drawCell(cellData, hingeGrid, r, c, x, y, cw, ch, path){
+  function drawCell(cellData, hingeGrid, r, c, x, y, cw, ch, path, chMM){
     if(isSplit(cellData)){
       const sub=cellData;
       const mt2=2.2;
@@ -1792,7 +1880,7 @@ function sketchSVG(m, live){
       for(let cc=1;cc<sub.cols;cc++) s+=`<rect x="${xAt2(cc)-mt2}" y="${y}" width="${mt2}" height="${ch}" stroke-width="0.7"/>`;
       for(let rr=1;rr<sub.rows;rr++) s+=`<rect x="${x}" y="${yAt2(rr)-mt2}" width="${cw}" height="${mt2}" stroke-width="0.7"/>`;
       for(let rr=0;rr<sub.rows;rr++) for(let cc=0;cc<sub.cols;cc++){
-        drawCell(sub.cells[rr][cc], sub.hinge, rr, cc, xAt2(cc), yAt2(rr), wPx2[cc], hPx2[rr], [...path,[rr,cc]]);
+        drawCell(sub.cells[rr][cc], sub.hinge, rr, cc, xAt2(cc), yAt2(rr), wPx2[cc], hPx2[rr], [...path,[rr,cc]], sub.rowH[rr]);
       }
       return;
     }
@@ -1818,6 +1906,19 @@ function sketchSVG(m, live){
       }
       if(type==="door"){
         s+=`<line x1="${hingeLeft?R-5:L+5}" y1="${(T+B)/2-4}" x2="${hingeLeft?R-5:L+5}" y2="${(T+B)/2+4}" stroke-width="1.8"/>`;
+        /* Пълнеж на вратата: комбинирано (стъкло+панел) или изцяло панел — леко
+           щрихована зона за панела, разделена от напречник при "split". */
+        const fill=doorFillAt(path);
+        const hatch=(y0,y1)=>{ for(let hy=y0+3; hy<y1-2; hy+=4) s+=`<line x1="${L+2}" y1="${hy}" x2="${R-2}" y2="${hy}" stroke-width="0.4" stroke="#a0a0a0"/>`; };
+        if(fill==="panel"){
+          hatch(T,B);
+        } else if(fill==="split"){
+          const pxPerMm = chMM ? (ch/chMM) : 0;
+          const panelPx = Math.min(Math.max((ui.doorSplitH||400)*pxPerMm, 4), (B-T)-8);
+          const divY = B - panelPx;
+          s+=`<line x1="${L}" y1="${divY}" x2="${R}" y2="${divY}" stroke-width="1.3"/>`;
+          hatch(divY,B);
+        }
       }
       if(type==="slide"){
         const midY=(T+B)/2, ah=6;
@@ -1833,6 +1934,11 @@ function sketchSVG(m, live){
         const hx = hg==="left" ? x+9 : x+cw-9;
         hitBuf.push(`<circle class="hit-hinge" data-path="${pathToStr(path)}" cx="${hx}" cy="${y+ch/2}" r="7"><title>Панта ${hg==="left"?"ляво":"дясно"} — кликни за обръщане</title></circle>`);
       }
+      if(type==="door"){
+        const fx=x+cw/2, fy=y+ch-7;
+        const FILL_TT = {glass:"Пълнеж: стъкло — кликни за смяна",split:"Пълнеж: комбинирано (стъкло+панел) — кликни за смяна",panel:"Пълнеж: панел — кликни за смяна"};
+        hitBuf.push(`<rect class="hit-fill" data-path="${pathToStr(path)}" x="${fx-7}" y="${fy-7}" width="14" height="14" fill="#fff" stroke="#888" stroke-width="0.6"><title>${FILL_TT[doorFillAt(path)]}</title></rect>`);
+      }
     }
   }
   for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
@@ -1840,7 +1946,8 @@ function sketchSVG(m, live){
     const sp=span[r][c];
     const cw=wPx.slice(c,c+sp.colSpan).reduce((a,b)=>a+b,0)+(sp.colSpan-1)*mt;
     const ch=hPx.slice(r,r+sp.rowSpan).reduce((a,b)=>a+b,0)+(sp.rowSpan-1)*mt;
-    drawCell(m.cells[r][c], m.hinge, r, c, xAt(c), yAt(r), cw, ch, [[r,c]]);
+    const chMM=rowH.slice(r,r+sp.rowSpan).reduce((a,b)=>a+b,0);
+    drawCell(m.cells[r][c], m.hinge, r, c, xAt(c), yAt(r), cw, ch, [[r,c]], chMM);
   }
   s+=`</g>`;
 
@@ -1918,7 +2025,8 @@ function currentModel(){
            sys:SYS,
            room:(document.getElementById("elRoom").value||"").trim(),
            name:(document.getElementById("elName").value||"").trim(),
-           threshold:ui.thr, std:ui.std, qty:1, decorPanel:currentDecorSelection(), panelColor:ui.panelColor||"" };
+           threshold:ui.thr, std:ui.std, qty:1, decorPanel:currentDecorSelection(), panelColor:ui.panelColor||"",
+           doorFill:{...ui.doorFill}, doorSplitH:ui.doorSplitH };
 }
 /* Жива цена — смята текущия елемент, без да го добавя в офертата */
 function livePrice(){
@@ -1973,7 +2081,7 @@ function livePreview(){
   const m=currentModel(), el=document.getElementById("livePreview");
   if(m.W<=0||m.H<=0){ el.innerHTML='<div style="color:#bbb;font-size:12px">Въведи размери</div>'; livePrice(); return; }
   el.innerHTML = sketchSVG(m,true) +
-    '<div class="sketch-tip">Кликни секция в чертежа, за да смениш типа ѝ · кликни жълтото кръгче, за да обърнеш пантата</div>';
+    '<div class="sketch-tip">Кликни секция в чертежа, за да смениш типа ѝ · кликни жълтото кръгче, за да обърнеш пантата · кликни бялото квадратче долу на вратата, за да смениш пълнежа ѝ (стъкло / комбинирано / панел)</div>';
 
   el.querySelectorAll(".hit-cell").forEach(h=>h.addEventListener("click",()=>{
     const path=strToPath(h.dataset.path);
@@ -1991,6 +2099,14 @@ function livePreview(){
     const path=strToPath(h.dataset.path);
     ensureHinge();
     setHingeAtPath(path, getHingeAtPath(path)==="left"?"right":"left");
+    renderCells(); livePreview();
+  }));
+  el.querySelectorAll(".hit-fill").forEach(h=>h.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const path=strToPath(h.dataset.path);
+    const ORDER=["glass","split","panel"];
+    const next=ORDER[(ORDER.indexOf(doorFillAt(path))+1)%ORDER.length];
+    setDoorFillAt(path,next);
     renderCells(); livePreview();
   }));
   livePrice();
@@ -2030,6 +2146,8 @@ function loadIntoForm(i){
   ui.hinge=(m.hinge||[]).map(r=>[...r]);
   ui.span=(m.span||defaultSpanGrid(ui.cols,ui.rows)).map(row=>row.map(sp=>({...sp})));
   ui.colW=[...(m.colW||[])]; ui.rowH=[...(m.rowH||[])];
+  ui.doorFill={...(m.doorFill||{})}; ui.doorSplitH=m.doorSplitH||400;
+  const splitHEl=document.getElementById("doorSplitH"); if(splitHEl) splitHEl.value=ui.doorSplitH;
   ui.reinf=m.reinf||"1.2"; ui.color=m.color||"white"; ui.std=m.std; ui.thr=!!m.threshold;
   document.getElementById("w").value=m.W;
   document.getElementById("h").value=m.H;
