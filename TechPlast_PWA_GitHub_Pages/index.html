@@ -100,6 +100,22 @@ input:focus,select:focus{outline:none;border-color:#FFD700}
 .cell.t-tt{border-color:#7a4fa3;background:#7a4fa3;color:#fff}
 .cell.t-door{border-color:#8a5a00;background:#8a5a00;color:#FFD700}
 .cell.t-slide{border-color:#0e7490;background:#0e7490;color:#fff}
+.split-btn{margin-top:4px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.12);color:inherit;cursor:pointer}
+.cell.t-fix .split-btn{border-color:#d7dee8;background:#fff;color:#64748b}
+.split-btn:hover{background:rgba(255,255,255,.24)}
+.cell-split{border:2px dashed #999;border-radius:7px;padding:6px;background:#f3f1ea}
+.cell-split-head{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:5px;font-size:10px;color:#555}
+.cell-split-head .cnt-btn{font-size:10px;padding:1px 5px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer}
+.cell-split-head .unsplit-btn{font-size:9px;padding:2px 6px;border:1px solid #c76;border-radius:12px;background:#fff;color:#a33;cursor:pointer}
+.cell-split-body{display:grid;gap:4px}
+.split-sz{display:grid;gap:4px;margin-top:5px}
+.split-sz input{padding:5px;font-size:11px;width:100%;box-sizing:border-box}
+.top-cell-wrap{display:flex;flex-direction:column;gap:3px;min-width:0}
+.merge-row{display:flex;flex-wrap:wrap;gap:3px}
+.merge-btn{font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;border:1px solid #ccc;background:#fff;color:#555;cursor:pointer}
+.merge-btn:hover{background:#f3f3f3}
+.merge-btn.unmerge{border-color:#c76;color:#a33}
 
 /* ===== ДОКУМЕНТ ЗА ПЕЧАТ ===== */
 .print-only{display:none}
@@ -532,9 +548,24 @@ const HW = {
   turn: { name:"обков отваряемо (all-in)", price:23.00, confirmed:true },
   tilt: { name:"обков падащо (all-in)",    price:23.00, confirmed:true },
   tt:   { name:"обков кемферно (all-in)",  price:23.00, confirmed:true },
-  door: { name:"обков врата (all-in)",     price:23.00, confirmed:true },
   slide:{ name:"плъзгаща система (комплект, all-in)", price:45.00, confirmed:false },
 };
+/* Обков ВРАТА — за разлика от прозоречния обков (all-in), тук имаме реални
+   цени по компонент от фактури на Хендел (дистрибутор Weiss Profil-Шумен,
+   №19728/№19726). Затова врата НЕ се третира като all-in ставка след
+   надценката, а се разбива на реални компоненти, които влизат В
+   МАТЕРИАЛНАТА БАЗА (получават надценката като всеки друг материал) —
+   защото тези компоненти са чисто материал, не включват вложен труд.
+   (Потвърдено от Кирил: "оправи обкова! той трябва да се разбива вътре
+   в цената за производство и имаш всички нужни цени!" и
+   "раздели обкова от прозоречен и за врати.") */
+const DOOR_HW = {
+  brava:  { name:"Брава (FLEX/SAMEX 35мм)",        price:3.12, confirmed:true,  note:"фактура Хендел, диапазон 2.80–3.43€, ползвана средна стойност" },
+  patron: { name:"Патрон (YALE DEKA 68мм)",        price:2.32, confirmed:true,  note:"фактура Хендел, диапазон 2.13–2.51€, ползвана средна стойност" },
+  drujka: { name:"Дръжка за врата (GEOLOCK)",      price:3.74, confirmed:true,  note:"фактура Хендел, диапазон 3.56–3.92€, ползвана средна стойност" },
+  panti:  { name:"Панти (комплект)",               price:2.50, confirmed:false, note:"⚠️ НЕПОТВЪРДЕНО — фактура показва M10 HIT ~2.30–2.70€, но Кирил уточни че тези панти са за МАГАЗИННИ врати, не за стандартна входна врата. Изчаква се коя точно панта се ползва реално." },
+};
+function doorHwTotal(){ return Object.values(DOOR_HW).reduce((s,x)=>s+x.price,0); }
 
 /* ===== TITAN NEW — реален каталог на комплекти кемферно (S TF Siegenia), по размер =====
    Извлечено от истинския ценоразпис (лист „OFFER“), €/бр НЕТО. Ширина/височина по фалц (FFB/FFH).
@@ -852,7 +883,113 @@ const CT = {
 };
 const CYCLE = ["fix","turn","tt","tilt","door","slide"];
 
-let ui = { std:"s1", cols:1, rows:1, thr:false, cells:[["fix"]], shape:"rect", colW:[], rowH:[], reinf:"1.2", color:"white", hinge:[] };
+/* ===== Влагане на решетки (nested grid) =====
+   Проблем от практиката (Кирил, ежедневен): при N×M решетка едно разделяне на
+   ред/колона важи за ЦЕЛИЯ чертеж — не може да имаш цяла врата в една колона,
+   докато съседната колона се дели на редове, без разделителят да „разцепи"
+   и вратата. Затова всяка клетка `cells[r][c]` вече може да бъде:
+     - низ (както досега) — плосък тип ("fix","door","turn"...)
+     - обект {split:true, cols, rows, cells:[[...]], colW:[...], rowH:[...], hinge:[[...]]}
+       — самостоятелна под-решетка, затворена В РАМКИТЕ на тази клетка (своя
+       собствена ширина/височина, собствени делители), която НЕ засяга съседни
+       клетки на горното ниво. Поддържа се рекурсивно (влагане във влагане). */
+function newSplitCell(cols, rows, W, H, defaultType){
+  defaultType = defaultType || "fix";
+  const cells = Array.from({length:rows},()=>Array.from({length:cols},()=>defaultType));
+  const colW = Array(cols).fill(W/cols);
+  const rowH = Array(rows).fill(H/rows);
+  const hinge = Array.from({length:rows},()=>Array.from({length:cols},(_,c)=>c<cols/2?"left":"right"));
+  return { split:true, cols, rows, cells, colW, rowH, hinge };
+}
+function isSplit(cell){ return !!(cell && typeof cell==="object" && cell.split); }
+function cloneCell(cell){
+  if(isSplit(cell)) return { split:true, cols:cell.cols, rows:cell.rows,
+    cells:cell.cells.map(row=>row.map(cloneCell)),
+    colW:[...cell.colW], rowH:[...cell.rowH],
+    hinge:cell.hinge.map(row=>[...row]) };
+  return cell;
+}
+function cloneCells(cells){ return cells.map(row=>row.map(cloneCell)); }
+function flattenCells(cells){
+  const out=[];
+  cells.forEach(row=>row.forEach(cell=>{
+    if(isSplit(cell)) out.push(...flattenCells(cell.cells));
+    else out.push(cell);
+  }));
+  return out;
+}
+function cellHasDoor(cell){
+  if(isSplit(cell)) return cell.cells.some(row=>row.some(cellHasDoor));
+  return cell==="door";
+}
+/* път до клетка: масив от [r,c] стъпки от външно ниво навътре, напр. [[0,1],[1,0]] */
+function pathToStr(path){ return path.map(p=>p[0]+","+p[1]).join(";"); }
+function strToPath(s){ return s.split(";").map(seg=>seg.split(",").map(Number)); }
+function getCellAtPath(cells, path){
+  let node = cells[path[0][0]][path[0][1]];
+  for(let i=1;i<path.length;i++) node = node.cells[path[i][0]][path[i][1]];
+  return node;
+}
+function setCellAtPath(cells, path, value){
+  if(path.length===1){ cells[path[0][0]][path[0][1]] = value; return; }
+  let node = cells[path[0][0]][path[0][1]];
+  for(let i=1;i<path.length-1;i++) node = node.cells[path[i][0]][path[i][1]];
+  const last = path[path.length-1];
+  node.cells[last[0]][last[1]] = value;
+}
+/* връща {cells, hinge} двойката 2D-масиви, които директно съдържат клетката на края на пътя */
+function containerAtPath(cells, hinge, path){
+  if(path.length===1) return {cells, hinge};
+  let node = cells[path[0][0]][path[0][1]];
+  for(let i=1;i<path.length-1;i++) node = node.cells[path[i][0]][path[i][1]];
+  return { cells: node.cells, hinge: node.hinge };
+}
+
+/* ===== Обединяване (merge) на съседни клетки на ГОРНОТО ниво =====
+   Проблем от практиката: в проста N×M решетка (напр. 3 колони × 2 реда)
+   потребителят понякога иска ЦЯЛА колона да е една врата (не 2 отделни
+   клетки една над друга). Решение: `m.span[r][c] = {rowSpan, colSpan}` —
+   клетката (r,c) „поглъща" съседните rowSpan×colSpan позиции под/вдясно
+   от себе си; тези позиции стават „покрити" (covered) — не се рисуват и
+   не се смятат отделно, а като част от клетката-котва (anchor).
+   Поддържа се САМО на горното ниво (не и вътре във вложена под-решетка —
+   ако потрябва и там, ще се добави по-късно). */
+function defaultSpanGrid(nc,nr){
+  const sp=[]; for(let r=0;r<nr;r++){ const row=[]; for(let c=0;c<nc;c++) row.push({rowSpan:1,colSpan:1}); sp.push(row); }
+  return sp;
+}
+function getSpanGrid(m){
+  const nc=m.cols, nr=m.rows;
+  if(m.span && m.span.length===nr && m.span[0] && m.span[0].length===nc) return m.span;
+  return defaultSpanGrid(nc,nr);
+}
+/* връща [r0,c0] на клетката-котва, която покрива позиция (r,c) — ако (r,c)
+   е самата котва (или няма никакво обединяване там), връща [r,c]. */
+function anchorAt(span, r, c){
+  for(let r0=0;r0<span.length;r0++) for(let c0=0;c0<span[r0].length;c0++){
+    const sp=span[r0][c0];
+    if((sp.rowSpan>1||sp.colSpan>1) && r>=r0 && r<r0+sp.rowSpan && c>=c0 && c<c0+sp.colSpan) return [r0,c0];
+  }
+  return [r,c];
+}
+function isCoveredTop(span, r, c){ const [ar,ac]=anchorAt(span,r,c); return ar!==r||ac!==c; }
+/* Плоски листа НА ГОРНОТО ниво, съобразени с обединяванията — всяка котва
+   веднъж, покритите позиции пропуснати; вложените под-решетки се разгъват
+   рекурсивно през flattenCells(). Използва се за преброяване на ъгли и
+   описателни етикети (не и за геометрията, която има собствена, по-пълна
+   сегментна логика в geometry()). */
+function flattenTopCells(m){
+  const nc=m.cols, nr=m.rows; const span=getSpanGrid(m); const out=[];
+  for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
+    if(isCoveredTop(span,r,c)) continue;
+    const cellData=m.cells[r][c];
+    if(isSplit(cellData)) out.push(...flattenCells(cellData.cells));
+    else out.push(cellData);
+  }
+  return out;
+}
+
+let ui = { std:"s1", cols:1, rows:1, thr:false, cells:[["fix"]], shape:"rect", colW:[], rowH:[], reinf:"1.2", color:"white", hinge:[], span:[[{rowSpan:1,colSpan:1}]] };
 const DOOR_W = 900, DOOR_H = 2100;  // типични размери за врата — начално предложение
 let modules = [];
 
@@ -1015,6 +1152,7 @@ function resizeCells(){
   const nw=[];
   for(let r=0;r<nr;r++){ const row=[]; for(let c=0;c<nc;c++){ row.push((old[r]&&old[r][c])||"fix"); } nw.push(row); }
   ui.cells=nw;
+  ui.span=defaultSpanGrid(nc,nr); // размерите на решетката се смениха — обединяванията вече не важат безопасно
 }
 function ensureHinge(){
   const nc=ui.cols,nr=ui.rows;
@@ -1023,32 +1161,188 @@ function ensureHinge(){
     row.push((ui.hinge[r]&&ui.hinge[r][cc]) || (cc<nc/2?"left":"right")); } h.push(row); }
   ui.hinge=h;
 }
+function ensureSpan(){
+  ui.span = getSpanGrid(ui);
+}
+function mergeDown(r,c){
+  const nc=ui.cols, nr=ui.rows;
+  const sp=ui.span[r][c];
+  if(r+sp.rowSpan>=nr) return; // няма следващ ред за поглъщане
+  const targetR=r+sp.rowSpan;
+  // целевата зона трябва да е свободна (не покрита от друго обединяване) и с еднакъв colSpan
+  for(let cc=c;cc<c+sp.colSpan;cc++){ if(isCoveredTop(ui.span,targetR,cc)) return; if(ui.span[targetR][cc].colSpan!==sp.colSpan) return; }
+  sp.rowSpan += ui.span[targetR][c].rowSpan;
+  // покритите позиции се нормализират на "fix" — вече са инертни, но да не остане стар тип
+  for(let rr=r;rr<r+sp.rowSpan;rr++) for(let cc=c;cc<c+sp.colSpan;cc++){ if(rr===r&&cc===c) continue; ui.cells[rr][cc]="fix"; ui.span[rr][cc]={rowSpan:1,colSpan:1}; }
+}
+function mergeRight(r,c){
+  const nc=ui.cols, nr=ui.rows;
+  const sp=ui.span[r][c];
+  if(c+sp.colSpan>=nc) return;
+  const targetC=c+sp.colSpan;
+  for(let rr=r;rr<r+sp.rowSpan;rr++){ if(isCoveredTop(ui.span,rr,targetC)) return; if(ui.span[rr][targetC].rowSpan!==sp.rowSpan) return; }
+  sp.colSpan += ui.span[r][targetC].colSpan;
+  for(let rr=r;rr<r+sp.rowSpan;rr++) for(let cc=c;cc<c+sp.colSpan;cc++){ if(rr===r&&cc===c) continue; ui.cells[rr][cc]="fix"; ui.span[rr][cc]={rowSpan:1,colSpan:1}; }
+}
+function unmerge(r,c){
+  const sp=ui.span[r][c];
+  for(let rr=r;rr<r+sp.rowSpan;rr++) for(let cc=c;cc<c+sp.colSpan;cc++){ ui.span[rr][cc]={rowSpan:1,colSpan:1}; }
+}
+function getHingeAtPath(path){
+  const {hinge}=containerAtPath(ui.cells, ui.hinge, path);
+  const last=path[path.length-1];
+  return (hinge[last[0]]&&hinge[last[0]][last[1]]) || "left";
+}
+function setHingeAtPath(path,val){
+  const {hinge}=containerAtPath(ui.cells, ui.hinge, path);
+  const last=path[path.length-1];
+  hinge[last[0]][last[1]]=val;
+}
+function resizeSplitCell(sub,newCols,newRows){
+  const old=sub.cells, oldHinge=sub.hinge;
+  const cells=[], hinge=[];
+  for(let r=0;r<newRows;r++){ const row=[],hrow=[];
+    for(let c=0;c<newCols;c++){
+      row.push((old[r]&&old[r][c])||"fix");
+      hrow.push((oldHinge[r]&&oldHinge[r][c])||(c<newCols/2?"left":"right"));
+    }
+    cells.push(row); hinge.push(hrow);
+  }
+  const totalW=sub.colW.reduce((a,b)=>a+b,0)||1, totalH=sub.rowH.reduce((a,b)=>a+b,0)||1;
+  sub.cells=cells; sub.hinge=hinge; sub.cols=newCols; sub.rows=newRows;
+  sub.colW=Array(newCols).fill(totalW/newCols);
+  sub.rowH=Array(newRows).fill(totalH/newRows);
+}
+/* Рекурсивно рендира една клетка (плосък тип ИЛИ вложена под-решетка) за
+   редактора преди добавяне. W,H са реалните мм размери на тази клетка —
+   нужни са за начално равномерно деление, ако бъде разделена. */
+function renderCellNode(cellData, path, W, H){
+  if(isSplit(cellData)){
+    const sub=cellData;
+    let inner="";
+    for(let r=0;r<sub.rows;r++) for(let c=0;c<sub.cols;c++){
+      inner+=renderCellNode(sub.cells[r][c], [...path,[r,c]], sub.colW[c], sub.rowH[r]);
+    }
+    let szInputs="";
+    if(sub.cols>1) szInputs+=`<div class="split-sz" style="grid-template-columns:repeat(${sub.cols},1fr)">`+
+      sub.colW.map((v,i)=>`<input type="number" data-splitpath="${pathToStr(path)}" data-szdim="col" data-szidx="${i}" value="${Math.round(v)}" title="Ширина на под-колона ${i+1}, мм">`).join("")+`</div>`;
+    if(sub.rows>1) szInputs+=`<div class="split-sz" style="grid-template-columns:repeat(${sub.rows},1fr)">`+
+      sub.rowH.map((v,i)=>`<input type="number" data-splitpath="${pathToStr(path)}" data-szdim="row" data-szidx="${i}" value="${Math.round(v)}" title="Височина на под-ред ${i+1}, мм">`).join("")+`</div>`;
+    return `<div class="cell-split" data-splitpath="${pathToStr(path)}" data-w="${W}" data-h="${H}">
+      <div class="cell-split-head">
+        <span>Раздел. ${sub.cols}×${sub.rows}</span>
+        <span>
+          <button class="cnt-btn" data-splitop="colminus" data-splitpath="${pathToStr(path)}" title="По-малко колони">−к</button>
+          <button class="cnt-btn" data-splitop="colplus" data-splitpath="${pathToStr(path)}" title="Още колони">+к</button>
+          <button class="cnt-btn" data-splitop="rowminus" data-splitpath="${pathToStr(path)}" title="По-малко редове">−р</button>
+          <button class="cnt-btn" data-splitop="rowplus" data-splitpath="${pathToStr(path)}" title="Още редове">+р</button>
+        </span>
+        <button class="unsplit-btn" data-unsplit="${pathToStr(path)}">✕ обедини</button>
+      </div>
+      <div class="cell-split-body" style="grid-template-columns:repeat(${sub.cols},1fr)">${inner}</div>
+      ${szInputs}
+    </div>`;
+  }
+  const t=CT[cellData];
+  const hg=getHingeAtPath(path);
+  const flip = t.key==="fix" ? "" :
+    `<button class="hinge-btn" data-hingepath="${pathToStr(path)}" title="Обърни пантата">${hg==="left"?"◀ панта":"панта ▶"}</button>`;
+  const splitBtn = `<button class="split-btn" data-splitpath="${pathToStr(path)}" data-splitop="tosplit" title="Раздели тази клетка на собствена под-решетка, независима от съседните">⊞ раздели</button>`;
+  return `<div class="cell ${t.cls}" data-cellpath="${pathToStr(path)}" data-w="${W}" data-h="${H}"><span class="ic">${t.ic}</span>${t.label}${flip}${splitBtn}</div>`;
+}
 function renderCells(){
-  ensureHinge();
+  ensureHinge(); ensureSpan();
   const el=document.getElementById("cellGrid");
   el.style.gridTemplateColumns=`repeat(${ui.cols},1fr)`;
+  el.style.gridTemplateRows=`repeat(${ui.rows},1fr)`;
+  const colW=(ui.colW&&ui.colW.length===ui.cols)?ui.colW:Array(ui.cols).fill((totalW()||0)/ui.cols);
+  const rowH=(ui.rowH&&ui.rowH.length===ui.rows)?ui.rowH:Array(ui.rows).fill((totalH()||0)/ui.rows);
   let h="";
   for(let r=0;r<ui.rows;r++) for(let c=0;c<ui.cols;c++){
-    const t=CT[ui.cells[r][c]];
-    const hg=ui.hinge[r][c];
-    const flip = t.key==="fix" ? "" :
-      `<button class="hinge-btn" data-hr="${r}" data-hc="${c}" title="Обърни пантата">${hg==="left"?"◀ панта":"панта ▶"}</button>`;
-    h+=`<div class="cell ${t.cls}" data-r="${r}" data-c="${c}"><span class="ic">${t.ic}</span>${t.label}${flip}</div>`;
+    if(isCoveredTop(ui.span,r,c)) continue;
+    const sp=ui.span[r][c];
+    const W=colW.slice(c,c+sp.colSpan).reduce((a,b)=>a+b,0);
+    const H=rowH.slice(r,r+sp.rowSpan).reduce((a,b)=>a+b,0);
+    const inner=renderCellNode(ui.cells[r][c], [[r,c]], W, H);
+    const canDown = ui.rows>1 && (r+sp.rowSpan<ui.rows);
+    const canRight = ui.cols>1 && (c+sp.colSpan<ui.cols);
+    const canUnmerge = sp.rowSpan>1 || sp.colSpan>1;
+    let mergeBtns="";
+    if(canDown) mergeBtns+=`<button class="merge-btn" data-mergeop="down" data-mr="${r}" data-mc="${c}" title="Обедини с клетката отдолу в тази колона — двете стават ЕДНА клетка">⬇ обедини</button>`;
+    if(canRight) mergeBtns+=`<button class="merge-btn" data-mergeop="right" data-mr="${r}" data-mc="${c}" title="Обедини с клетката отдясно в този ред — двете стават ЕДНА клетка">➡ обедини</button>`;
+    if(canUnmerge) mergeBtns+=`<button class="merge-btn unmerge" data-mergeop="un" data-mr="${r}" data-mc="${c}" title="Раздели обратно на отделни клетки">↕ раздели</button>`;
+    h+=`<div class="top-cell-wrap" style="grid-column:${c+1} / span ${sp.colSpan};grid-row:${r+1} / span ${sp.rowSpan}">${inner}${mergeBtns?`<div class="merge-row">${mergeBtns}</div>`:""}</div>`;
   }
   el.innerHTML=h;
-  el.querySelectorAll(".hinge-btn").forEach(btn=>btn.addEventListener("click",ev=>{
+  bindCellNodeEvents(el);
+}
+function bindCellNodeEvents(el){
+  el.querySelectorAll('.merge-btn').forEach(btn=>btn.addEventListener("click",ev=>{
     ev.stopPropagation();
-    const r=+btn.dataset.hr, cc=+btn.dataset.hc;
-    ui.hinge[r][cc] = ui.hinge[r][cc]==="left" ? "right" : "left";
+    const r=+btn.dataset.mr, c=+btn.dataset.mc, op=btn.dataset.mergeop;
+    if(op==="down") mergeDown(r,c);
+    if(op==="right") mergeRight(r,c);
+    if(op==="un") unmerge(r,c);
     renderCells(); livePreview();
   }));
-  el.querySelectorAll(".cell").forEach(cell=>cell.addEventListener("click",()=>{
-    const r=+cell.dataset.r, c=+cell.dataset.c;
-    const i=CYCLE.indexOf(ui.cells[r][c]);
-    const was=ui.cells[r][c];
-    ui.cells[r][c]=CYCLE[(i+1)%CYCLE.length];
-    // Ако се появи или изчезне врата — предлагаме ново разпределение
-    if(was==="door" || ui.cells[r][c]==="door"){ autoDistribute(); renderSizes(); }
+  el.querySelectorAll(".hinge-btn").forEach(btn=>btn.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const path=strToPath(btn.dataset.hingepath);
+    setHingeAtPath(path, getHingeAtPath(path)==="left"?"right":"left");
+    renderCells(); livePreview();
+  }));
+  el.querySelectorAll('.split-btn[data-splitop="tosplit"]').forEach(btn=>btn.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const path=strToPath(btn.dataset.splitpath);
+    const parent=el.querySelector(`.cell[data-cellpath="${btn.dataset.splitpath}"]`);
+    const W=+parent.dataset.w, H=+parent.dataset.h;
+    setCellAtPath(ui.cells, path, newSplitCell(1,2,W,H,"fix"));
+    renderCells(); livePreview();
+  }));
+  el.querySelectorAll(".unsplit-btn").forEach(btn=>btn.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const path=strToPath(btn.dataset.unsplit);
+    setCellAtPath(ui.cells, path, "fix");
+    renderCells(); livePreview();
+  }));
+  el.querySelectorAll('.cnt-btn').forEach(btn=>btn.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    const path=strToPath(btn.dataset.splitpath);
+    const sub=getCellAtPath(ui.cells, path);
+    const op=btn.dataset.splitop;
+    let nc=sub.cols, nr=sub.rows;
+    if(op==="colminus") nc=Math.max(1,nc-1);
+    if(op==="colplus")  nc=Math.min(6,nc+1);
+    if(op==="rowminus") nr=Math.max(1,nr-1);
+    if(op==="rowplus")  nr=Math.min(6,nr+1);
+    resizeSplitCell(sub,nc,nr);
+    renderCells(); livePreview();
+  }));
+  el.querySelectorAll('input[data-szdim]').forEach(inp=>inp.addEventListener("input",()=>{
+    const path=strToPath(inp.dataset.splitpath);
+    const sub=getCellAtPath(ui.cells, path);
+    const idx=+inp.dataset.szidx, val=parseFloat(inp.value)||0;
+    if(inp.dataset.szdim==="col") sub.colW[idx]=val; else sub.rowH[idx]=val;
+    const box=el.querySelector(`.cell-split[data-splitpath="${inp.dataset.splitpath}"]`);
+    const targetW=+box.dataset.w, targetH=+box.dataset.h;
+    const okW=Math.abs(sub.colW.reduce((a,b)=>a+b,0)-targetW)<1;
+    const okH=Math.abs(sub.rowH.reduce((a,b)=>a+b,0)-targetH)<1;
+    box.querySelectorAll('input[data-szdim="col"]').forEach(i=>i.classList.toggle("sz-bad",!okW));
+    box.querySelectorAll('input[data-szdim="row"]').forEach(i=>i.classList.toggle("sz-bad",!okH));
+    livePreview();
+  }));
+  el.querySelectorAll(".cell").forEach(cell=>cell.addEventListener("click",(ev)=>{
+    if(ev.target.closest(".hinge-btn")||ev.target.closest(".split-btn")) return;
+    const path=strToPath(cell.dataset.cellpath);
+    const {cells}=containerAtPath(ui.cells, ui.hinge, path);
+    const last=path[path.length-1];
+    const cur=cells[last[0]][last[1]];
+    const i=CYCLE.indexOf(cur);
+    const next=CYCLE[(i+1)%CYCLE.length];
+    cells[last[0]][last[1]]=next;
+    // Ако врата се появи/изчезне НА ГОРНОТО НИВО — преразпределяме външната решетка.
+    // Вътре в под-решетка размерите са локални (собствени colW/rowH), не пипаме външната.
+    if(path.length===1 && (cur==="door"||next==="door")){ autoDistribute(); renderSizes(); }
     renderCells(); livePreview();
   }));
 }
@@ -1170,7 +1464,7 @@ document.querySelectorAll("#decorToggle .tab").forEach(t=>t.addEventListener("cl
 updateDecorModels();
 /* Картата се вижда само ако текущата решетка съдържа поне една врата */
 function updateDecorCardVisibility(){
-  const hasDoor = ui.cells.some(row=>row.some(t=>t==="door"));
+  const hasDoor = ui.cells.some(row=>row.some(cellHasDoor));
   document.getElementById("decorCard").style.display = hasDoor ? "block" : "none";
   if(!hasDoor && ui.decor.on){
     ui.decor.on=false;
@@ -1201,10 +1495,124 @@ function trapGeo(W,H1,H2){
 }
 function fmtA(a){ return a.toFixed(1).replace(/\.0$/,""); }
 
+function emptyGeo(){ return {frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[],glass:[],hw:{},problems:[],decorPanels:[]}; }
+function mergeGeo(o,res){
+  o.frame.push(...res.frame); o.sashWin.push(...res.sashWin); o.sashDoor.push(...res.sashDoor);
+  o.mullion.push(...res.mullion); o.bead.push(...res.bead); o.reinf.push(...res.reinf);
+  o.glass.push(...res.glass); o.problems.push(...res.problems);
+  if(res.decorPanels && res.decorPanels.length) o.decorPanels.push(...res.decorPanels);
+  Object.entries(res.hw||{}).forEach(([k,n])=>o.hw[k]=(o.hw[k]||0)+n);
+  if(res.hwDetail && res.hwDetail.length){ o.hwDetail=o.hwDetail||[]; o.hwDetail.push(...res.hwDetail); }
+}
+/* Обработва ЕДНА клетка от решетката — или плосък тип (лист), или вложена
+   под-решетка (обект {split:true,...}), рекурсивно. W,H,sides са РЕАЛНИТЕ
+   мм размери и „каса ли е или делител" за всяка от 4-те страни НА ТАЗИ
+   клетка — независимо дали клетката е горно-ниво или вложена. */
+function processCell(cellData, W, H, sides, m, atBottomEdge){
+  if(isSplit(cellData)) return processSplitCell(cellData, W, H, sides, m, atBottomEdge);
+  return processLeaf(cellData, W, H, sides, m, atBottomEdge);
+}
+function processSplitCell(sub, W, H, sides, m, atBottomEdge){
+  const o=emptyGeo();
+  const D=S(m.sys).ded;
+  const nc=sub.cols, nr=sub.rows;
+  /* Локални делители — САМО в рамките на тази клетка; не засягат съседни
+     клетки на горното ниво (точно това решава проблема с „разцепената врата"). */
+  const innerW=W-D.mullion, innerH=H-D.mullion;
+  if(innerW<=0||innerH<=0){ o.problems.push(`Под-решетка ${nc}×${nr}: отворът ${Math.round(W)}×${Math.round(H)}мм е по-малък от приспадането на делителя (${D.mullion}мм).`); return o; }
+  for(let c=1;c<nc;c++) o.mullion.push(pc(innerH,"90/90"));
+  for(let r=1;r<nr;r++) o.mullion.push(pc(innerW,"90/90"));
+  const colW=(sub.colW&&sub.colW.length===nc)?sub.colW:Array(nc).fill(W/nc);
+  const rowH=(sub.rowH&&sub.rowH.length===nr)?sub.rowH:Array(nr).fill(H/nr);
+  for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
+    const w=colW[c], h=rowH[r];
+    if(w-D.sashSub<=0 || h-D.sashSub<=0){
+      o.problems.push(`Под-секция ${c+1}×${r+1} е ${Math.round(w)}×${Math.round(h)}мм — твърде малка (нужни са поне ${D.sashSub+1}мм).`);
+      continue;
+    }
+    const childSides = {
+      left:  c===0      ? sides.left  : false,
+      right: c===nc-1    ? sides.right : false,
+      top:   r===0       ? sides.top   : false,
+      bottom:r===nr-1    ? sides.bottom: false,
+    };
+    const childBottom = atBottomEdge && (r===nr-1);
+    mergeGeo(o, processCell(sub.cells[r][c], w, h, childSides, m, childBottom));
+  }
+  return o;
+}
+function processLeaf(cellKey, share, shareH, sides, m, isBottom){
+  const o=emptyGeo();
+  const type=CT[cellKey];
+  const D=S(m.sys).ded;
+  /* От коя страна стои КАСА и от коя ДЕЛИТЕЛ — приспаданията са различни.
+     Официална проверка (Weiss WP4000): 1 крило = A−70; 2 крила с делител = (A−87)/2.
+     страна към каса 38мм · страна към делител 11.5мм · опилка +6 на крило. */
+  const лявоКаса=sides.left, дясноКаса=sides.right, гореКаса=sides.top, долуКаса=sides.bottom;
+  const сбор=(кас,мул,a,b)=>(a?кас:мул)+(b?кас:мул);
+
+  if(type.key==="fix"){
+    const gw=share  - сбор(D.glassFixSide, D.glassMulSide, лявоКаса, дясноКаса);
+    const gh=shareH - сбор(D.glassFixSide, D.glassMulSide, гореКаса, долуКаса);
+    o.glass.push({w:gw,h:gh,n:1});
+    const bw=share  - сбор(D.beadSide, D.beadMulSide, лявоКаса, дясноКаса);
+    const bh=shareH - сбор(D.beadSide, D.beadMulSide, гореКаса, долуКаса);
+    o.bead.push(pc(bw,"45/45"),pc(bw,"45/45"),pc(bh,"45/45"),pc(bh,"45/45"));
+  } else {
+    const isSlide = (type.key==="slide");
+    /* Плъзгащото крило застъпва релсата/съседа с ~20мм (типично за плъзгаща система),
+       не с 8мм като завъртаното — числото е ОЦЕНКА, не потвърдено от производството. */
+    const slideOverlap = isSlide ? 12 : 0; // допълнително застъпване спрямо стандартното крило
+    const sw=share  - сбор(D.frameSide, D.mulSide, лявоКаса, дясноКаса) + D.weld + slideOverlap;
+    const sh=shareH - сбор(D.frameSide, D.mulSide, гореКаса, долуКаса) + D.weld;
+    const bucket=type.door?"sashDoor":"sashWin";
+    const botAngle = (m.threshold && isBottom) ? "45/90" : "45/45";
+    o[bucket].push(pc(sw,"45/45"),pc(sw,botAngle),pc(sh,"45/45"),pc(sh,"45/45"));
+    o.reinf.push(pc(sw-S(m.sys).ded.reinf,"90/90"),pc(sw-S(m.sys).ded.reinf,"90/90"),
+                 pc(sh-S(m.sys).ded.reinf,"90/90"),pc(sh-S(m.sys).ded.reinf,"90/90"));
+    o.bead.push(pc(sw-S(m.sys).ded.bead,"45/45"),pc(sw-S(m.sys).ded.bead,"45/45"),
+                pc(sh-S(m.sys).ded.bead,"45/45"),pc(sh-S(m.sys).ded.bead,"45/45"));
+    /* Стъкло в отваряемо крило: от габарита на секцията се приспадат 193мм
+       (потвърдено от производството; официалната формула на Weiss дава 194). */
+    /* Стъклото стои В КРИЛОТО → мери се от размера на крилото.
+       При 1 крило това дава габарит − 193, както потвърди производството. */
+    /* 193мм дава ОТВОРА; поръчаното стъкло е с 10мм хлабина (по 5 на страна). */
+    const вКрило = (D.glassSash||193) - (2*D.frameSide - D.weld);
+    const хлаб = D.glassGap||10;
+    const openW = sw-вКрило-хлаб, openH = sh-вКрило-хлаб;
+    if(type.door && m.decorPanel && m.decorPanel.cat){
+      /* Декоративен панел за врата — ФИКСИРАНА цена, не по площ. Проверяваме дали
+         реалният светъл отвор на крилото се вписва в границите на избрания модел. */
+      const dp=m.decorPanel;
+      const lim=decorPanelLimits(dp.cat, dp.model);
+      const price=decorPanelPrice(dp.cat, dp.model, dp.color, dp.thickness, dp.isIB);
+      if(!lim || price==null){
+        o.problems.push(`Декоративен панел: невалиден избор на модел/цвят/дебелина.`);
+      } else if(openW>lim.maxW || openH>lim.maxH){
+        o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм надвишава максималния размер на панела ${lim.maxW}×${lim.maxH}мм.`);
+      } else if(openW<lim.minW || openH<lim.minH){
+        o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм е под минималния за панела ${lim.minW}×${lim.minH}мм.`);
+      } else {
+        o.decorPanels.push({ model:dp.model, cat:dp.cat, price, openW:Math.round(openW), openH:Math.round(openH) });
+      }
+    } else {
+      o.glass.push({w:openW, h:openH, n:1});
+    }
+    if(type.hw){
+      o.hw[type.hw]=(o.hw[type.hw]||0)+1;
+      if(type.hw==="tt" && m.hwMode==="titan"){
+        const t = TITAN_TT.lookup(Math.round(sw), Math.round(sh));
+        o.hwDetail = o.hwDetail || [];
+        o.hwDetail.push({ price: t.inRange ? t.price : HW.tt.price, real:t.inRange, wLabel:t.wLabel, hLabel:t.hLabel });
+      }
+    }
+  }
+  return o;
+}
 function geometry(m){
   if(m.shape==="trap") return geometryTrap(m);
   const nc=m.cols, nr=m.rows;
-  const o={frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[],glass:[],hw:{},problems:[]};
+  const o=emptyGeo();
 
   // Каса — по габарит, 45/45; армировка в касата
   o.frame.push(pc(m.W,"45/45"),pc(m.W,"45/45"),pc(m.H,"45/45"),pc(m.H,"45/45"));
@@ -1217,87 +1625,55 @@ function geometry(m){
   const innerW=m.W-S(m.sys).ded.mullion, innerH=m.H-S(m.sys).ded.mullion;
   if(innerW<=0||innerH<=0){ o.problems.push("Отворът е по-малък от приспадането на касата ("+S(m.sys).ded.mullion+"мм)."); return o; }
 
-  // Делители — 90/90
-  for(let c=1;c<nc;c++) o.mullion.push(pc(innerH,"90/90"));
-  for(let r=1;r<nr;r++) o.mullion.push(pc(innerW,"90/90"));
-
   // Реални размери на секциите (редактируеми); ако липсват — равно деление
   const colW = (m.colW && m.colW.length===nc) ? m.colW : Array(nc).fill(m.W/nc);
   const rowH = (m.rowH && m.rowH.length===nr) ? m.rowH : Array(nr).fill(m.H/nr);
+  const span = getSpanGrid(m);
+  const sameAnchor=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+
+  /* Делители — 90/90 (само на ГОРНОТО ниво; вложените под-решетки добавят своите
+     отделно). Сегментирани на „непрекъснати участъци": ако потребителят е обединил
+     клетки (виж span/mergeDown/mergeRight по-долу), делителят, който би минал ПРЕЗ
+     обединената зона, просто липсва там — само в тази конкретна колона/ред, без да
+     засяга съседните. Без никакво обединяване това дава точно same резултат като
+     преди (един цял делител на цялата вътрешна височина/ширина). */
+  for(let c=1;c<nc;c++){
+    let runStart=null;
+    for(let r=0;r<=nr;r++){
+      const boundary = r<nr && !sameAnchor(anchorAt(span,r,c-1), anchorAt(span,r,c));
+      if(boundary && runStart===null) runStart=r;
+      if((!boundary||r===nr) && runStart!==null){
+        const len=rowH.slice(runStart,r).reduce((a,b)=>a+b,0)-S(m.sys).ded.mullion;
+        if(len>0) o.mullion.push(pc(len,"90/90"));
+        runStart=null;
+      }
+    }
+  }
+  for(let r=1;r<nr;r++){
+    let runStart=null;
+    for(let c=0;c<=nc;c++){
+      const boundary = c<nc && !sameAnchor(anchorAt(span,r-1,c), anchorAt(span,r,c));
+      if(boundary && runStart===null) runStart=c;
+      if((!boundary||c===nc) && runStart!==null){
+        const len=colW.slice(runStart,c).reduce((a,b)=>a+b,0)-S(m.sys).ded.mullion;
+        if(len>0) o.mullion.push(pc(len,"90/90"));
+        runStart=null;
+      }
+    }
+  }
 
   for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
-    const share=colW[c], shareH=rowH[r];
-    if(share-S(m.sys).ded.sashSub<=0 || shareH-S(m.sys).ded.sashSub<=0){
+    if(isCoveredTop(span,r,c)) continue; // част от съседна обединена клетка — вече обработена при нейната котва
+    const sp=span[r][c];
+    const share=colW.slice(c,c+sp.colSpan).reduce((a,b)=>a+b,0);
+    const shareH=rowH.slice(r,r+sp.rowSpan).reduce((a,b)=>a+b,0);
+    const cellData=m.cells[r][c];
+    if(!isSplit(cellData) && (share-S(m.sys).ded.sashSub<=0 || shareH-S(m.sys).ded.sashSub<=0)){
       o.problems.push(`Секция ${c+1}×${r+1} е ${Math.round(share)}×${Math.round(shareH)}мм — твърде малка (нужни са поне ${S(m.sys).ded.sashSub+1}мм).`);
       return o;
     }
-    const type=CT[m.cells[r][c]];
-    /* От коя страна стои КАСА и от коя ДЕЛИТЕЛ — приспаданията са различни.
-       Официална проверка (Weiss WP4000): 1 крило = A−70; 2 крила с делител = (A−87)/2.
-       страна към каса 38мм · страна към делител 11.5мм · опилка +6 на крило. */
-    const D=S(m.sys).ded;
-    const лявоКаса = (c===0), дясноКаса = (c===nc-1);
-    const гореКаса = (r===0), долуКаса = (r===nr-1);
-    const сбор=(кас,мул,a,b)=>(a?кас:мул)+(b?кас:мул);
-
-    if(type.key==="fix"){
-      const gw=share  - сбор(D.glassFixSide, D.glassMulSide, лявоКаса, дясноКаса);
-      const gh=shareH - сбор(D.glassFixSide, D.glassMulSide, гореКаса, долуКаса);
-      o.glass.push({w:gw,h:gh,n:1});
-      const bw=share  - сбор(D.beadSide, D.beadMulSide, лявоКаса, дясноКаса);
-      const bh=shareH - сбор(D.beadSide, D.beadMulSide, гореКаса, долуКаса);
-      o.bead.push(pc(bw,"45/45"),pc(bw,"45/45"),pc(bh,"45/45"),pc(bh,"45/45"));
-    } else {
-      const isSlide = (type.key==="slide");
-      /* Плъзгащото крило застъпва релсата/съседа с ~20мм (типично за плъзгаща система),
-         не с 8мм като завъртаното — числото е ОЦЕНКА, не потвърдено от производството. */
-      const slideOverlap = isSlide ? 12 : 0; // допълнително застъпване спрямо стандартното крило
-      const sw=share  - сбор(D.frameSide, D.mulSide, лявоКаса, дясноКаса) + D.weld + slideOverlap;
-      const sh=shareH - сбор(D.frameSide, D.mulSide, гореКаса, долуКаса) + D.weld;
-      const bucket=type.door?"sashDoor":"sashWin";
-      const isBottom = r===nr-1;
-      const botAngle = (m.threshold && isBottom) ? "45/90" : "45/45";
-      o[bucket].push(pc(sw,"45/45"),pc(sw,botAngle),pc(sh,"45/45"),pc(sh,"45/45"));
-      o.reinf.push(pc(sw-S(m.sys).ded.reinf,"90/90"),pc(sw-S(m.sys).ded.reinf,"90/90"),
-                   pc(sh-S(m.sys).ded.reinf,"90/90"),pc(sh-S(m.sys).ded.reinf,"90/90"));
-      o.bead.push(pc(sw-S(m.sys).ded.bead,"45/45"),pc(sw-S(m.sys).ded.bead,"45/45"),
-                  pc(sh-S(m.sys).ded.bead,"45/45"),pc(sh-S(m.sys).ded.bead,"45/45"));
-      /* Стъкло в отваряемо крило: от габарита на секцията се приспадат 193мм
-         (потвърдено от производството; официалната формула на Weiss дава 194). */
-      /* Стъклото стои В КРИЛОТО → мери се от размера на крилото.
-         При 1 крило това дава габарит − 193, както потвърди производството. */
-      /* 193мм дава ОТВОРА; поръчаното стъкло е с 10мм хлабина (по 5 на страна). */
-      const вКрило = (D.glassSash||193) - (2*D.frameSide - D.weld);
-      const хлаб = D.glassGap||10;
-      const openW = sw-вКрило-хлаб, openH = sh-вКрило-хлаб;
-      if(type.door && m.decorPanel && m.decorPanel.cat){
-        /* Декоративен панел за врата — ФИКСИРАНА цена, не по площ. Проверяваме дали
-           реалният светъл отвор на крилото се вписва в границите на избрания модел. */
-        const dp=m.decorPanel;
-        const lim=decorPanelLimits(dp.cat, dp.model);
-        const price=decorPanelPrice(dp.cat, dp.model, dp.color, dp.thickness, dp.isIB);
-        if(!lim || price==null){
-          o.problems.push(`Декоративен панел: невалиден избор на модел/цвят/дебелина.`);
-        } else if(openW>lim.maxW || openH>lim.maxH){
-          o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм надвишава максималния размер на панела ${lim.maxW}×${lim.maxH}мм.`);
-        } else if(openW<lim.minW || openH<lim.minH){
-          o.problems.push(`Декоративен панел ${dp.model}: светлият отвор ${Math.round(openW)}×${Math.round(openH)}мм е под минималния за панела ${lim.minW}×${lim.minH}мм.`);
-        } else {
-          o.decorPanels = o.decorPanels || [];
-          o.decorPanels.push({ model:dp.model, cat:dp.cat, price, openW:Math.round(openW), openH:Math.round(openH) });
-        }
-      } else {
-        o.glass.push({w:openW, h:openH, n:1});
-      }
-      if(type.hw){
-        o.hw[type.hw]=(o.hw[type.hw]||0)+1;
-        if(type.hw==="tt" && m.hwMode==="titan"){
-          const t = TITAN_TT.lookup(Math.round(sw), Math.round(sh));
-          o.hwDetail = o.hwDetail || [];
-          o.hwDetail.push({ price: t.inRange ? t.price : HW.tt.price, real:t.inRange, wLabel:t.wLabel, hLabel:t.hLabel });
-        }
-      }
-    }
+    const sides = { left:(c===0), right:(c+sp.colSpan===nc), top:(r===0), bottom:(r+sp.rowSpan===nr) };
+    mergeGeo(o, processCell(cellData, share, shareH, sides, m, r+sp.rowSpan===nr));
   }
   o.glass.forEach(g=>{ if(g.w<=0||g.h<=0)
     o.problems.push(`Стъкло ${Math.round(g.w)}×${Math.round(g.h)}мм — секцията е твърде малка.`); });
@@ -1373,12 +1749,54 @@ function sketchSVG(m, live){
   const wPx=colW.map(v=>v/sumW*availW), hPx=rowH.map(v=>v/sumH*availH);
   const xAt=i=>iX+wPx.slice(0,i).reduce((a,b)=>a+b,0)+i*mt;
   const yAt=i=>iY+hPx.slice(0,i).reduce((a,b)=>a+b,0)+i*mt;
-  for(let c=1;c<nc;c++) s+=`<rect x="${xAt(c)-mt}" y="${iY}" width="${mt}" height="${iH}" stroke-width="0.9"/>`;
-  for(let r=1;r<nr;r++) s+=`<rect x="${iX}" y="${yAt(r)-mt}" width="${iW}" height="${mt}" stroke-width="0.9"/>`;
+  const span=getSpanGrid(m);
+  const sameAnchorSk=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+  /* Външните делители се рисуват на сегменти — там, където потребителят е
+     обединил клетки (виж span/mergeDown/mergeRight), линията просто липсва
+     за тази конкретна колона/ред, вместо да минава през обединената зона. */
+  for(let c=1;c<nc;c++){
+    let runStart=null;
+    for(let r=0;r<=nr;r++){
+      const boundary = r<nr && !sameAnchorSk(anchorAt(span,r,c-1), anchorAt(span,r,c));
+      if(boundary && runStart===null) runStart=r;
+      if((!boundary||r===nr) && runStart!==null){
+        s+=`<rect x="${xAt(c)-mt}" y="${yAt(runStart)}" width="${mt}" height="${yAt(r)-yAt(runStart)-mt}" stroke-width="0.9"/>`;
+        runStart=null;
+      }
+    }
+  }
+  for(let r=1;r<nr;r++){
+    let runStart=null;
+    for(let c=0;c<=nc;c++){
+      const boundary = c<nc && !sameAnchorSk(anchorAt(span,r-1,c), anchorAt(span,r,c));
+      if(boundary && runStart===null) runStart=c;
+      if((!boundary||c===nc) && runStart!==null){
+        s+=`<rect x="${xAt(runStart)}" y="${yAt(r)-mt}" width="${xAt(c)-xAt(runStart)-mt}" height="${mt}" stroke-width="0.9"/>`;
+        runStart=null;
+      }
+    }
+  }
 
-  for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
-    const x=xAt(c), y=yAt(r), cw=wPx[c], ch=hPx[r];
-    const type=m.cells[r][c];
+  /* Рекурсивно рисува клетка (плосък тип ИЛИ вложена под-решетка) в правоъгълника
+     x,y,cw,ch. hitBuf — акумулатор за интерактивния слой (само при live). */
+  const hitBuf=[];
+  function drawCell(cellData, hingeGrid, r, c, x, y, cw, ch, path){
+    if(isSplit(cellData)){
+      const sub=cellData;
+      const mt2=2.2;
+      const sumW2=sub.colW.reduce((a,b)=>a+b,0)||1, sumH2=sub.rowH.reduce((a,b)=>a+b,0)||1;
+      const availW2=cw-(sub.cols-1)*mt2, availH2=ch-(sub.rows-1)*mt2;
+      const wPx2=sub.colW.map(v=>v/sumW2*availW2), hPx2=sub.rowH.map(v=>v/sumH2*availH2);
+      const xAt2=i=>x+wPx2.slice(0,i).reduce((a,b)=>a+b,0)+i*mt2;
+      const yAt2=i=>y+hPx2.slice(0,i).reduce((a,b)=>a+b,0)+i*mt2;
+      for(let cc=1;cc<sub.cols;cc++) s+=`<rect x="${xAt2(cc)-mt2}" y="${y}" width="${mt2}" height="${ch}" stroke-width="0.7"/>`;
+      for(let rr=1;rr<sub.rows;rr++) s+=`<rect x="${x}" y="${yAt2(rr)-mt2}" width="${cw}" height="${mt2}" stroke-width="0.7"/>`;
+      for(let rr=0;rr<sub.rows;rr++) for(let cc=0;cc<sub.cols;cc++){
+        drawCell(sub.cells[rr][cc], sub.hinge, rr, cc, xAt2(cc), yAt2(rr), wPx2[cc], hPx2[rr], [...path,[rr,cc]]);
+      }
+      return;
+    }
+    const type=cellData;
     if(type==="fix"){
       const cx=x+cw/2,cy=y+ch/2,rr=Math.min(6,cw/5,ch/5);
       s+=`<line x1="${cx-rr}" y1="${cy}" x2="${cx+rr}" y2="${cy}" stroke-width="0.9"/>`;
@@ -1388,7 +1806,7 @@ function sketchSVG(m, live){
       s+=`<rect x="${x}" y="${y}" width="${cw}" height="${ch}" stroke-width="1.1"/>`;
       s+=`<rect x="${x+t2}" y="${y+t2}" width="${cw-2*t2}" height="${ch-2*t2}" stroke-width="0.6"/>`;
       const L=x+t2,R=x+cw-t2,T=y+t2,B=y+ch-t2;
-      const hingeLeft = (m.hinge && m.hinge[r] && m.hinge[r][c]) ? m.hinge[r][c]==="left" : (c < nc/2);
+      const hingeLeft = (hingeGrid && hingeGrid[r] && hingeGrid[r][c]) ? hingeGrid[r][c]==="left" : true;
       // Отваряемо / врата: връх към пантата
       if(type==="turn"||type==="tt"||type==="door"){
         const ax=hingeLeft?L:R, bx=hingeLeft?R:L;
@@ -1408,24 +1826,28 @@ function sketchSVG(m, live){
         s+=`<path d="M ${R-ah} ${midY-ah} L ${R} ${midY} L ${R-ah} ${midY+ah}" stroke-width="1.1" fill="none"/>`;
       }
     }
+    if(live){
+      hitBuf.push(`<rect class="hit-cell" data-path="${pathToStr(path)}" x="${x}" y="${y}" width="${cw}" height="${ch}" fill="transparent"><title>${CT[type].label} — кликни за смяна</title></rect>`);
+      if(type!=="fix"){
+        const hg=(hingeGrid&&hingeGrid[r]&&hingeGrid[r][c])||"left";
+        const hx = hg==="left" ? x+9 : x+cw-9;
+        hitBuf.push(`<circle class="hit-hinge" data-path="${pathToStr(path)}" cx="${hx}" cy="${y+ch/2}" r="7"><title>Панта ${hg==="left"?"ляво":"дясно"} — кликни за обръщане</title></circle>`);
+      }
+    }
+  }
+  for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
+    if(isCoveredTop(span,r,c)) continue;
+    const sp=span[r][c];
+    const cw=wPx.slice(c,c+sp.colSpan).reduce((a,b)=>a+b,0)+(sp.colSpan-1)*mt;
+    const ch=hPx.slice(r,r+sp.rowSpan).reduce((a,b)=>a+b,0)+(sp.rowSpan-1)*mt;
+    drawCell(m.cells[r][c], m.hinge, r, c, xAt(c), yAt(r), cw, ch, [[r,c]]);
   }
   s+=`</g>`;
 
   /* Интерактивен слой — само в живата скица.
      Ляв клик = смяна на типа; клик по малкото кръгче = обръщане на пантата. */
   if(live){
-    s+=`<g class="hit">`;
-    for(let r=0;r<nr;r++) for(let c=0;c<nc;c++){
-      const x=xAt(c), y=yAt(r), cw=wPx[c], ch=hPx[r];
-      const t=m.cells[r][c];
-      s+=`<rect class="hit-cell" data-hr="${r}" data-hc="${c}" x="${x}" y="${y}" width="${cw}" height="${ch}" fill="transparent"><title>${CT[t].label} — кликни за смяна</title></rect>`;
-      if(t!=="fix"){
-        const hg=(m.hinge&&m.hinge[r]&&m.hinge[r][c])||"left";
-        const hx = hg==="left" ? x+9 : x+cw-9;
-        s+=`<circle class="hit-hinge" data-fr="${r}" data-fc="${c}" cx="${hx}" cy="${y+ch/2}" r="7"><title>Панта ${hg==="left"?"ляво":"дясно"} — кликни за обръщане</title></circle>`;
-      }
-    }
-    s+=`</g>`;
+    s+=`<g class="hit">${hitBuf.join("")}</g>`;
   }
   const dim="#9a9a9a",by=Y+H+14,lx=X-16;
   s+=`<g stroke="${dim}" stroke-width="0.7">`;
@@ -1490,7 +1912,8 @@ function currentModel(){
            H:parseFloat(document.getElementById("h").value)||0,
            H2:parseFloat(document.getElementById("h2").value)||0,
            shape:ui.shape,
-           cols:ui.cols, rows:ui.rows, cells:ui.cells.map(r=>[...r]),
+           cols:ui.cols, rows:ui.rows, cells:cloneCells(ui.cells),
+           span:getSpanGrid(ui).map(row=>row.map(sp=>({...sp}))),
            colW:[...ui.colW], rowH:[...ui.rowH], reinf:ui.reinf, color:ui.color, hinge:ui.hinge.map(r=>[...r]), mullionType:ui.mullionType, sashType:ui.sashType, hwMode:ui.hwMode,
            sys:SYS,
            room:(document.getElementById("elRoom").value||"").trim(),
@@ -1525,18 +1948,24 @@ function livePrice(){
   mat+=decorCost;
   /* Алуминиева сглобка на ъгъл — влиза в материалната база (получава надценка) */
   if(S(m.sys).corner){
-    const corners = m.cells.flat().reduce((s,t)=>s+(t==="fix"?4:8),0);
+    const corners = flattenTopCells(m).reduce((s,t)=>s+(t==="fix"?4:8),0);
     mat += corners * S(m.sys).corner.price;
   }
-  let hw=0; Object.entries(geo.hw||{}).forEach(([k,n])=>hw+=n*HW[k].price);
-  /* обковът е all-in → добавя се СЛЕД надценката */
+  let hw=0, doorHwCost=0;
+  Object.entries(geo.hw||{}).forEach(([k,n])=>{
+    if(k==="door"){ doorHwCost+=n*doorHwTotal(); }
+    else hw+=n*HW[k].price;
+  });
+  /* Обков ВРАТА — реални компоненти, влиза в материалната база (получава надценка) */
+  mat += doorHwCost;
+  /* Обков прозорец (turn/tilt/tt/slide) е all-in → добавя се СЛЕД надценката */
   const net=mat*MK()+hw, gross=net*VAT;
   const lead=CLIENT==="person"?gross:net, other=CLIENT==="person"?net:gross;
   el.className="live-price on";
   el.innerHTML=`<div class="lp-top">
       <span class="lp-num">€${(lead*m.qty).toFixed(2)}</span>
       <span class="lp-lbl">${CLIENT==="person"?"с ДДС":"без ДДС"}${m.qty>1?` · ${m.qty} бр.`:""}</span></div>
-    <div class="lp-rows">Материал <b>€${mat.toFixed(2)}</b> · надценка ${MARKUP_PCT}%${hw>0?` · обков <b>€${hw.toFixed(2)}</b> (all-in)`:""} · ${CLIENT==="person"?"без ДДС":"с ДДС"} <b>€${(other*m.qty).toFixed(2)}</b>${m.qty>1?`<br>За 1 бр.: <b>€${lead.toFixed(2)}</b>`:""}<br>Профил <b>${(fL+swL+sdL+muL).toFixed(2)} лм</b> · стъкло <b>${area.toFixed(2)} м²</b>${decorCost>0?` · декор. панел <b>€${decorCost.toFixed(2)}</b>`:""} · армировка <b>${rL.toFixed(2)} лм</b></div>`;
+    <div class="lp-rows">Материал <b>€${mat.toFixed(2)}</b>${doorHwCost>0?` (вкл. обков врата €${doorHwCost.toFixed(2)})`:""} · надценка ${MARKUP_PCT}%${hw>0?` · обков <b>€${hw.toFixed(2)}</b> (all-in)`:""} · ${CLIENT==="person"?"без ДДС":"с ДДС"} <b>€${(other*m.qty).toFixed(2)}</b>${m.qty>1?`<br>За 1 бр.: <b>€${lead.toFixed(2)}</b>`:""}<br>Профил <b>${(fL+swL+sdL+muL).toFixed(2)} лм</b> · стъкло <b>${area.toFixed(2)} м²</b>${decorCost>0?` · декор. панел <b>€${decorCost.toFixed(2)}</b>`:""} · армировка <b>${rL.toFixed(2)} лм</b></div>`;
 }
 
 function livePreview(){
@@ -1547,18 +1976,21 @@ function livePreview(){
     '<div class="sketch-tip">Кликни секция в чертежа, за да смениш типа ѝ · кликни жълтото кръгче, за да обърнеш пантата</div>';
 
   el.querySelectorAll(".hit-cell").forEach(h=>h.addEventListener("click",()=>{
-    const r=+h.dataset.hr, cc=+h.dataset.hc;
-    const i=CYCLE.indexOf(ui.cells[r][cc]);
-    const беше=ui.cells[r][cc];
-    ui.cells[r][cc]=CYCLE[(i+1)%CYCLE.length];
-    if(беше==="door"||ui.cells[r][cc]==="door"){ autoDistribute(); renderSizes(); }
+    const path=strToPath(h.dataset.path);
+    const {cells}=containerAtPath(ui.cells, ui.hinge, path);
+    const last=path[path.length-1];
+    const беше=cells[last[0]][last[1]];
+    const i=CYCLE.indexOf(беше);
+    const next=CYCLE[(i+1)%CYCLE.length];
+    cells[last[0]][last[1]]=next;
+    if(path.length===1 && (беше==="door"||next==="door")){ autoDistribute(); renderSizes(); }
     renderCells(); livePreview();
   }));
   el.querySelectorAll(".hit-hinge").forEach(h=>h.addEventListener("click",ev=>{
     ev.stopPropagation();
-    const r=+h.dataset.fr, cc=+h.dataset.fc;
+    const path=strToPath(h.dataset.path);
     ensureHinge();
-    ui.hinge[r][cc] = ui.hinge[r][cc]==="left" ? "right" : "left";
+    setHingeAtPath(path, getHingeAtPath(path)==="left"?"right":"left");
     renderCells(); livePreview();
   }));
   livePrice();
@@ -1594,8 +2026,9 @@ function loadIntoForm(i){
   SYS=m.sys||SYS;
   const ss=document.getElementById("sysSel"); if(ss){ ss.value=SYS; }
   ui.cols=m.cols; ui.rows=m.rows;
-  ui.cells=m.cells.map(r=>[...r]);
+  ui.cells=cloneCells(m.cells);
   ui.hinge=(m.hinge||[]).map(r=>[...r]);
+  ui.span=(m.span||defaultSpanGrid(ui.cols,ui.rows)).map(row=>row.map(sp=>({...sp})));
   ui.colW=[...(m.colW||[])]; ui.rowH=[...(m.rowH||[])];
   ui.reinf=m.reinf||"1.2"; ui.color=m.color||"white"; ui.std=m.std; ui.thr=!!m.threshold;
   document.getElementById("w").value=m.W;
@@ -1632,12 +2065,12 @@ function render(){
     if(!all[sysKey]) all[sysKey]={frame:[],sashWin:[],sashDoor:[],mullion:[],bead:[],reinf:[]};
     return all[sysKey];
   }
-  const cost={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0,glass:0,hw:0,corner:0,decor:0};
+  const cost={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0,glass:0,hw:0,doorhw:0,corner:0,decor:0};
   let cornerCount=0;
   let titanHwLines=[];
   const lm={frame:0,sashWin:0,sashDoor:0,mullion:0,bead:0,reinf:0};
   let glassArea=0, panelArea=0; const glassOrders={}, panelOrders={}, decorPanelOrders={}; const hwCount={};
-  let anyUnconfirmedHW=false, anyUnconfirmedReinf=false;
+  let anyUnconfirmedHW=false, anyUnconfirmedReinf=false, doorHwCount=0;
 
   modules.forEach(m=>{
     const s=STANDARDS[m.std], g=GLASS[s.glass], geo=geometry(m);
@@ -1662,7 +2095,7 @@ function render(){
     /* Алуминиева сглобка на ъгъл — 4 за касата + 4 за всяка отваряема секция (не за фикс) */
     if(S(m.sys).corner){
       /* Всяка секция носи собствени ъгли: фикс=4, отваряема(вкл.врата)=8 — не 4 общо+4/отваряема */
-      const corners = m.cells.flat().reduce((s,t)=>s+(t==="fix"?4:8),0) * m.qty;
+      const corners = flattenTopCells(m).reduce((s,t)=>s+(t==="fix"?4:8),0) * m.qty;
       cornerCount += corners;
       cost.corner += corners * S(m.sys).corner.price;
     }
@@ -1686,10 +2119,18 @@ function render(){
       decorPanelOrders[`${d.model}|${d.openW}×${d.openH}`] = (decorPanelOrders[`${d.model}|${d.openW}×${d.openH}`]||0) + m.qty;
     });
 
-    let mh=0;
+    let mh=0, doorHwCostThisModule=0;
     Object.entries(geo.hw).forEach(([k,n])=>{
       const tot=n*m.qty; hwCount[k]=(hwCount[k]||0)+tot;
-      if(k==="tt" && geo.hwDetail){
+      if(k==="door"){
+        /* Обков ВРАТА — реални компоненти (брава/патрон/дръжка/панти), влиза
+           в материалната база и получава надценка (не е all-in). */
+        const totCost=tot*doorHwTotal();
+        doorHwCostThisModule += totCost;
+        cost.doorhw += totCost;
+        doorHwCount = (doorHwCount||0) + tot;
+        if(Object.values(DOOR_HW).some(x=>!x.confirmed)) anyUnconfirmedHW=true;
+      } else if(k==="tt" && geo.hwDetail){
         // Реален TITAN комплект — всяка кемферна секция носи собствена цена по размер
         geo.hwDetail.forEach(d=>{
           mh += d.price*m.qty;
@@ -1706,7 +2147,7 @@ function render(){
     m._hw=mh;
     m._mat=(fL*S(m.sys).price.frame[m.color||"white"]+swL*S(m.sys).price.sashWin[m.color||"white"]+sdL*S(m.sys).price.sashDoor[m.color||"white"]
       +muL*S(m.sys).price.mullion[m.color||"white"]+bL*S(m.sys).price.bead[g.bead][m.color||"white"]+rL*S(m.sys).reinf[m.reinf||"1.2"].price
-      +mg*g.price+decorCostThisModule)/m.qty;
+      +mg*g.price+decorCostThisModule+doorHwCostThisModule)/m.qty;
     m._geo=geo;
   });
 
@@ -1731,7 +2172,7 @@ function render(){
     const бр=списък.reduce((s,[m])=>s+m.qty,0);
     const карти=списък.map(([m,i])=>{
     const s=STANDARDS[m.std];
-    const flat=m.cells.flat().map(k=>CT[k].label);
+    const flat=flattenTopCells(m).map(k=>CT[k].label);
     const counts={}; flat.forEach(l=>counts[l]=(counts[l]||0)+1);
     const desc=Object.entries(counts).map(([l,n])=>n>1?`${n}× ${l}`:l).join(" · ");
     const unitNet=m._mat*MK()+(m._hw||0)/m.qty, unitGross=unitNet*VAT;
@@ -1785,14 +2226,23 @@ function render(){
   if(panelArea>0) b+=r("Панел (пълнеж, не стъкло)",panelArea.toFixed(2)+" м²",cost.panel||0,false,true);
   if(cost.decor>0) b+=r("Декоративен панел за врата",Object.values(decorPanelOrders).reduce((a,c)=>a+c,0)+" бр.",cost.decor,false,true);
   if(cost.corner>0) b+=r("Сглобка/монтичели (ъгли)",cornerCount+" бр.",cost.corner,false,true);
+  if(cost.doorhw>0){
+    b+=`<div class="b2-sec b2-sec-cost">Обков врата (реални компоненти, влиза в материала — не е all-in)</div>`;
+    Object.entries(DOOR_HW).forEach(([k,x])=>{
+      b+=r(x.name+(x.confirmed?"":" ⚠️"),doorHwCount+" бр.",x.price*doorHwCount,false,true);
+    });
+    b+=r("Общо обков врата","",cost.doorhw,false,true);
+  }
   b+=r("Себестойност на производството","",material,true,true);
 
   b+=`<div class="b2-sec b2-sec-cost">Надценка — печалба, транспорт, монтаж</div>`;
   const mkAmount = material*(MARKUP_PCT/100);
   b+=r(`Надценка ${MARKUP_PCT}%`,"",mkAmount,false,true);
-  if(Object.keys(hwCount).length){
-    b+=`<div class="b2-sec">Обков (all-in — вече включва труд, не се надценява)</div>`;
-    Object.entries(hwCount).forEach(([k,n])=>{
+  const winHwKeys = Object.keys(hwCount).filter(k=>k!=="door");
+  if(winHwKeys.length){
+    b+=`<div class="b2-sec">Обков прозорец (all-in — вече включва труд, не се надценява)</div>`;
+    winHwKeys.forEach(k=>{
+      const n=hwCount[k];
       if(k==="tt" && titanHwLines.length){
         titanHwLines.forEach(l=>{
           b += r(`Обков кемферно ${l.wLabel}×${l.hLabel}мм (TITAN${l.real?"":" ⚠️ извън таблицата, ползва 23€"})`, l.qty+" бр.", l.price*l.qty);
